@@ -7,6 +7,14 @@ import { useState } from 'react';
 import { Button, Text, View, TextInput, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
+
+//Questions
+/*
+Are Stack Navigator Screens considered real screens? What about tabs? 
+Will need to create the readme for the alpha version. 
+
+*/
+
 //Firebase Stuff
 import { initializeApp } from 'firebase/app';
 // import { // access to authentication features:
@@ -18,24 +26,19 @@ import { initializeApp } from 'firebase/app';
 //          getFirestore, 
 // } from "firebase/firestore";
 
-// // New for images:
-// import { // access to Firebase storage features (for files like images, video, etc.)
-//          getStorage, 
-// } from "firebase/storage";
 
-// Initialize Firebase
-const firebaseApp = initializeApp(firebaseConfig);
-const auth = getAuth(firebaseApp);
+// const firebaseApp = initializeApp(firebaseConfig);
+// const auth = getAuth(firebaseApp);
 
 // TODO: Replace the following with your app's Firebase project configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDEVXzUI5empQDcg9s6b6kskX4K3xujPoQ",
-  authDomain: "cs317final.firebaseapp.com",
-  projectId: "cs317final",
-  storageBucket: "cs317final.appspot.com",
-  messagingSenderId: "854675465399",
-  appId: "1:854675465399:web:a0c32269a0a878874c1932"
-};
+// const firebaseConfig = {
+//   apiKey: "AIzaSyDEVXzUI5empQDcg9s6b6kskX4K3xujPoQ",
+//   authDomain: "cs317final.firebaseapp.com",
+//   projectId: "cs317final",
+//   storageBucket: "cs317final.appspot.com",
+//   messagingSenderId: "854675465399",
+//   appId: "1:854675465399:web:a0c32269a0a878874c1932"
+// };
 
 function LoginScreen(){
   
@@ -94,7 +97,7 @@ function SignInScreen({navigation}){
       secureTextEntry
       onSubmitEditing={(value) => setPassword(value.nativeEvent.text)}
     />
-    <Button title="Next Page" onPress={() => navigation.navigate('Main Screen'), firebase()} color='green'/>
+    <Button title="Next Page" onPress={() => navigation.navigate('Main Screen')} color='green'/>
     </View>
   )
 }
