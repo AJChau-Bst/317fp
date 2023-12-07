@@ -4,19 +4,15 @@ import { StatusBar } from 'expo-status-bar';
 import { createStackNavigator } from '@react-navigation/stack';
 import * as React from 'react';
 import { useState } from 'react';
-import { Button, Text, View, TextInput, StyleSheet } from 'react-native';
+import { Button, Text, View, TextInput, StyleSheet, Image, Slider } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-
-
-//Questions
-/*
-Are Stack Navigator Screens considered real screens? What about tabs? 
-Will need to create the readme for the alpha version. 
-
-*/
+import { useNavigation } from '@react-navigation/native'
+import * as Progress from 'react-native-progress';
+import Checkbox from 'expo-checkbox';
+//Progress Bar: https://www.npmjs.com/package/react-native-progress
 
 //Firebase Stuff
-import { initializeApp } from 'firebase/app';
+// import { initializeApp } from 'firebase/app';
 // import { // access to authentication features:
 //          getAuth, 
 //          // for logging out:
@@ -26,7 +22,12 @@ import { initializeApp } from 'firebase/app';
 //          getFirestore, 
 // } from "firebase/firestore";
 
+// // New for images:
+// import { // access to Firebase storage features (for files like images, video, etc.)
+//          getStorage, 
+// } from "firebase/storage";
 
+// Initialize Firebase
 // const firebaseApp = initializeApp(firebaseConfig);
 // const auth = getAuth(firebaseApp);
 
@@ -40,15 +41,72 @@ import { initializeApp } from 'firebase/app';
 //   appId: "1:854675465399:web:a0c32269a0a878874c1932"
 // };
 
-function LoginScreen(){
-  
-  return(
-    <Text>Settings!</Text>
-  );
 
+function HomeScreen(){
+  const [checkedBreakfast, setCheckedBreakfast] = React.useState(false);
+  const [checkedLunch, setCheckedLunch] = React.useState(false);
+  const [checkedDinner, setCheckedDinner] = React.useState(false);
+  const toggleCheckbox = () => setChecked(!checked);
+  states = ['./happy.png', './neutral.png', './sad.png'];
+  index = 1;
+
+
+
+  return (
+    <View style={styles.containerHome}>
+
+      <Image
+      style={styles.petImage}
+      source={require(states[index])}
+    />
+    <Text>Water!</Text>
+    <Progress.Bar 
+      progress={0.3} 
+      width={200} 
+      height = {30} 
+      borderRadius = {8} 
+      color = 'pink'/>
+
+
+    <View style={{ flexDirection: 'row' }}>
+    <Text>Breakfast!</Text>
+    <Checkbox
+      style = {styles.elementHome}
+      value={checkedBreakfast} 
+      onValueChange={setCheckedBreakfast} />
+      <Text>Lunch!</Text>
+    <Checkbox
+      style = {styles.elementHome}
+      value={checkedLunch} 
+      onValueChange={setCheckedLunch} />
+      <Text>Dinner!</Text>
+    <Checkbox
+      style = {styles.elementHome}
+      value={checkedDinner} 
+      onValueChange={setCheckedDinner} />   
+
+    </View>  
+
+    <Text>Sleep!</Text>
+    <Progress.Bar 
+      progress={0.3} 
+      width={200} 
+      height = {30} 
+      borderRadius = {8} 
+      color = 'blue'/>
+
+    <Text>Hygiene!</Text>
+    <Progress.Bar 
+    progress={0.3} 
+    width={200} 
+    height = {30} 
+    borderRadius = {8} 
+    color = 'green'/>
+    </View>
+  );
 }
 
-function HomeScreen() {
+function SocialScreen() {
   return (
     <Text>Settings!</Text>
   );
@@ -60,13 +118,13 @@ function SettingsScreen() {
   );
 }
 
-function TestScreen() {
+function StatusScreen() {
   return (
     <Text>Settings!</Text>
   );
 }
 
-function AnotherTestScreen() {
+function DecorationScreen() {
   return (
     <Text>Settings!</Text>
   );
@@ -78,11 +136,12 @@ function UserScreen(){
   );
 }
 
-function firebase(){
+function TrophiesScreen(){
 
 }
 
 function SignInScreen({navigation}){
+  
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   return(
@@ -108,22 +167,33 @@ const Tab = createBottomTabNavigator();
 function MyTabs() {
   return (
     <Tab.Navigator>
-      <Tab.Screen name="1" component={HomeScreen} />
-      <Tab.Screen name="2" component={SettingsScreen} />
-      <Tab.Screen name="3" component={TestScreen} />
-      <Tab.Screen name="4" component={AnotherTestScreen} />
+      <Tab.Screen name="Social" component={SocialScreen} />
+      <Tab.Screen name="Your Pet" component={HomeScreen} />
+      <Tab.Screen name="Status" component={StatusScreen} />
+      <Tab.Screen name="Decoration" component={DecorationScreen} />
+      <Tab.Screen name="Trophies" component={TrophiesScreen} />
     </Tab.Navigator>
   );
 }
 
-const Stack = createStackNavigator();
+const stackN= createStackNavigator();
 
 function MyStack() {
+  const navigation = useNavigation();
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="Log In" component={SignInScreen} />
-      <Stack.Screen name="Main Screen" component={UserScreen} />
-    </Stack.Navigator>
+    <stackN.Navigator>
+      <stackN.Screen name="Log In" component={SignInScreen} />
+      <stackN.Screen name="Main Screen" component={UserScreen}
+      options={{
+          headerRight: () => (
+            <Button
+              title="Settings"
+              onPress={() => navigation.navigate('Settings')}
+            />
+          ),
+        }} />
+      <stackN.Screen name="Settings" component={SettingsScreen} />
+    </stackN.Navigator>
   );
 }
 
@@ -149,5 +219,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
+  },
+    petImage: {
+    justifyContent: 'center',
+    width: '50%',
+    height: '50%',
+    resizeMode: 'center'
+    },
+    containerHome: {
+    alignItems: 'center',
+    padding: 2,
+    justifyContent: 'space-between'
+  },
+  elementHome: {
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    margin: 10,
+    
   }
 });
