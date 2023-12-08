@@ -10,37 +10,34 @@ import { useNavigation } from '@react-navigation/native'
 import * as Progress from 'react-native-progress';
 import Checkbox from 'expo-checkbox';
 import { TouchableOpacity} from 'react-native';
+import {  createUserWithEmailAndPassword  } from 'firebase/auth';
+import { emailOf } from './utils';
 //Progress Bar: https://www.npmjs.com/package/react-native-progress
 
 //Firebase Stuff
-// import { initializeApp } from 'firebase/app';
-// import { // access to authentication features:
-//          getAuth, 
-//          // for logging out:
-//          signOut
-// } from "firebase/auth";
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+
 // import { // access to Firestore features:
 //          getFirestore, 
 // } from "firebase/firestore";
 
-// // New for images:
-// import { // access to Firebase storage features (for files like images, video, etc.)
-//          getStorage, 
-// } from "firebase/storage";
 
+//Initialize Firebase
+//TODO: Replace the following with your app's Firebase project configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDEVXzUI5empQDcg9s6b6kskX4K3xujPoQ",
+  authDomain: "cs317final.firebaseapp.com",
+  projectId: "cs317final",
+  storageBucket: "cs317final.appspot.com",
+  messagingSenderId: "854675465399",
+  appId: "1:854675465399:web:a0c32269a0a878874c1932"
+};
 // Initialize Firebase
-// const firebaseApp = initializeApp(firebaseConfig);
-// const auth = getAuth(firebaseApp);
+const app = initializeApp(firebaseConfig);
 
-// TODO: Replace the following with your app's Firebase project configuration
-// const firebaseConfig = {
-//   apiKey: "AIzaSyDEVXzUI5empQDcg9s6b6kskX4K3xujPoQ",
-//   authDomain: "cs317final.firebaseapp.com",
-//   projectId: "cs317final",
-//   storageBucket: "cs317final.appspot.com",
-//   messagingSenderId: "854675465399",
-//   appId: "1:854675465399:web:a0c32269a0a878874c1932"
-// };
+// Initialize Firebase Authentication and get a reference to the service
+export const auth = getAuth(app);
 
 const images = {
   happy: require('./happycat.png'),
@@ -182,6 +179,29 @@ function SignInScreen({navigation}){
   
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
+  const Signup = () => {
+ 
+    const onSubmit = async (e) => {
+      e.preventDefault()
+     
+      await createUserWithEmailAndPassword(auth, username, password)
+        .then((userCredential) => {
+            // Signed in
+            const user = userCredential.user;
+            console.log(user);
+            // ...
+        })
+        .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.log(errorCode, errorMessage);
+            // ..
+        });
+ 
+   
+    }
+  }
   return(
     <View style={styles.container}>
     <Text> Username: </Text>
@@ -192,7 +212,7 @@ function SignInScreen({navigation}){
       style={styles.input}
       label="Password"
       secureTextEntry
-      onSubmitEditing={(value) => setPassword(value.nativeEvent.text)}
+      onSubmitEditing={(e) => setPassword(e.nativeEvent.text)}
     />
     <Button title="Next Page" onPress={() => navigation.navigate('Main Screen')} color='green'/>
     </View>
@@ -300,5 +320,5 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     margin: 10,
     
-  }
+  },
 });
