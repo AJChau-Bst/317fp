@@ -9,6 +9,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native'
 import * as Progress from 'react-native-progress';
 import Checkbox from 'expo-checkbox';
+import { TouchableOpacity} from 'react-native';
 //Progress Bar: https://www.npmjs.com/package/react-native-progress
 
 //Firebase Stuff
@@ -41,14 +42,35 @@ import Checkbox from 'expo-checkbox';
 //   appId: "1:854675465399:web:a0c32269a0a878874c1932"
 // };
 
+const images = {
+  happy: require('./happycat.png'),
+  sad: require('./sad.png'),
+  // ... other images
+};
 
 function HomeScreen(){
   const [checkedBreakfast, setCheckedBreakfast] = React.useState(false);
   const [checkedLunch, setCheckedLunch] = React.useState(false);
   const [checkedDinner, setCheckedDinner] = React.useState(false);
   const toggleCheckbox = () => setChecked(!checked);
-  states = ['./happy.png', './neutral.png', './sad.png'];
-  index = 1;
+
+  const [waterProgress, setWaterProgress] = React.useState(0);
+  const handleAddWater = () => {
+    setWaterProgress(prevProgress => Math.min(prevProgress + 1 / 15, 1)); // Increment by 1/15 because 15 cups of water, max is 1
+  };
+
+  const [sleepProgress, setSleepProgress] = React.useState(0);
+  const handleAddSleep = () => {
+    setSleepProgress(prevProgress => Math.min(prevProgress + 1 / 7, 1)); // Increment by 1/15 because 15 cups of water, max is 1
+  };
+
+  const [hygieneProgress, setHygieneProgress] = React.useState(0);
+  const handleAddHygiene = () => {
+    setHygieneProgress(prevProgress => Math.min(prevProgress + 1 / 7, 1)); // Increment by 1/15 because 15 cups of water, max is 1
+  };
+
+  const states = ['happy', 'neutral', 'sad'];
+  const index = 0;
 
 
 
@@ -56,17 +78,22 @@ function HomeScreen(){
     <View style={styles.containerHome}>
 
       <Image
-      style={styles.petImage}
-      source={require(states[index])}
-    />
-    <Text>Water!</Text>
-    <Progress.Bar 
-      progress={0.3} 
-      width={200} 
-      height = {30} 
-      borderRadius = {8} 
-      color = 'pink'/>
+        style={styles.petImage}
+        source={images[states[index]]}
+      />
 
+      <View style={styles.inlineContainer}>
+        <Text>Water </Text>
+        <Progress.Bar 
+          progress={waterProgress} 
+          width={200} 
+          height={30} 
+          borderRadius={8} 
+          color='pink'/>
+        <TouchableOpacity onPress={handleAddWater} style={styles.buttonStyle}>
+          <Text style={styles.buttonText}>Add</Text>
+        </TouchableOpacity>
+      </View>
 
     <View style={{ flexDirection: 'row' }}>
     <Text>Breakfast!</Text>
@@ -84,25 +111,36 @@ function HomeScreen(){
       style = {styles.elementHome}
       value={checkedDinner} 
       onValueChange={setCheckedDinner} />   
-
     </View>  
 
-    <Text>Sleep!</Text>
-    <Progress.Bar 
-      progress={0.3} 
+    <View style={styles.inlineContainer}>
+      <Text>Sleep </Text>
+      <Progress.Bar 
+        progress={sleepProgress} 
+        width={200} 
+        height = {30} 
+        borderRadius = {8} 
+        color = 'blue'/>
+      <TouchableOpacity onPress={handleAddSleep} style={styles.buttonStyle}>
+        <Text style={styles.buttonText}>Add</Text>
+      </TouchableOpacity>
+    </View>
+
+      
+    <View style={styles.inlineContainer}>
+      <Text>Hygiene </Text>
+      <Progress.Bar 
+      progress={hygieneProgress} 
       width={200} 
       height = {30} 
       borderRadius = {8} 
-      color = 'blue'/>
-
-    <Text>Hygiene!</Text>
-    <Progress.Bar 
-    progress={0.3} 
-    width={200} 
-    height = {30} 
-    borderRadius = {8} 
-    color = 'green'/>
+      color = 'green'/>
+      <TouchableOpacity onPress={handleAddHygiene} style={styles.buttonStyle}>
+        <Text style={styles.buttonText}>Add</Text>
+      </TouchableOpacity>
     </View>
+    
+  </View>
   );
 }
 
@@ -206,6 +244,32 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  containerHome: {
+    alignItems: 'center',
+    padding: 2,
+    justifyContent: 'space-between',
+
+    // Add space between inlineContainer views
+    paddingBottom: 10, // Space at the bottom of each container
+  },
+    inlineContainer: {
+    flexDirection: 'row', // Aligns children horizontally
+    alignItems: 'center', // Centers children vertically in the container
+    marginBottom: 20, // Add bottom margin to each inlineContainer
+    marginTop: 20
+      
+  },
+    buttonStyle: {
+    backgroundColor: '#DA63E9', // Example background color
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+    marginLeft: 10
+  },
+  buttonText: {
+    color: 'white', // Example text color
+    fontSize: 16,
+  }, 
     input: {
     borderColor: "gray",
     width: "50%",
@@ -222,9 +286,9 @@ const styles = StyleSheet.create({
   },
     petImage: {
     justifyContent: 'center',
-    width: '50%',
-    height: '50%',
-    resizeMode: 'center'
+    width: 300,
+    height: 300,
+    resizeMode: 'contain'
     },
     containerHome: {
     alignItems: 'center',
