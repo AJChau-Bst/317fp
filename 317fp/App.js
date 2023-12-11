@@ -3,13 +3,13 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { createStackNavigator } from '@react-navigation/stack';
 import * as React from 'react';
-import { useState } from 'react';
-import { Button, Text, View, TextInput, StyleSheet, Image, Slider } from 'react-native';
+import { useState, useEffect } from 'react';
+import { Button, Text, View, TextInput, StyleSheet, Image, Slider, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native'
 import * as Progress from 'react-native-progress';
 import Checkbox from 'expo-checkbox';
-import { TouchableOpacity} from 'react-native';
+
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -47,7 +47,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const images = {
   happy: require('./happycat.png'),
-  sad: require('./sad.png'),
+  sad: require('./sadcat.png'),
+  neutral: require('./neutralcat.png')
   // ... other images
 };
 
@@ -72,8 +73,79 @@ function HomeScreen(){
     setHygieneProgress(prevProgress => Math.min(prevProgress + 1 / 7, 1)); // Increment by 1/15 because 15 cups of water, max is 1
   };
 
-  const states = ['happy', 'neutral', 'sad'];
-  const index = 0;
+  const [imageKey, setImageKey] = useState('sad');
+  const [emotionText, setEmotionText] = useState("");
+
+  const calculateAverageProgress = () => {
+    // Assuming each checkbox contributes equally and dividing by total number of progress elements
+    const checkboxProgress = (checkedBreakfast + checkedLunch + checkedDinner) / 3;
+    const totalProgress = waterProgress + sleepProgress + hygieneProgress + checkboxProgress;
+    return totalProgress / 4; // Average of the four progress values
+  };
+
+  const averageProgress = calculateAverageProgress();
+  
+  useEffect(() => {
+    let newImageKey = 'happy';
+    let newEmotionText = "Ayyy...I feel great!";
+
+    const averageProgress = calculateAverageProgress();
+
+    if (averageProgress < 0.3) {
+      newImageKey = 'sad';
+      newEmotionText = "Ehhh...I'm not feeling so good";
+    } else if (averageProgress < 0.6) {
+      newImageKey = 'neutral';
+      newEmotionText = "Hmmm...I'm doing alright";
+    }
+
+    setImageKey(newImageKey);
+    setEmotionText(newEmotionText);
+  }, [averageProgress, checkedBreakfast, checkedLunch, checkedDinner, waterProgress, sleepProgress, hygieneProgress]);
+
+
+  //having progress bars automatically reset at the end of the day
+  const [lastResetDate, setLastResetDate] = useState(null);
+
+  // Function to reset progress bars
+  const resetProgressBars = async () => {
+    setWaterProgress(0);
+    setSleepProgress(0);
+    setHygieneProgress(0);
+    setCheckedBreakfast(false);
+    setCheckedLunch(false);
+    setCheckedDinner(false);
+
+    // Update the last reset timestamp to the current time
+    const currentTime = new Date().getTime();
+    setLastResetTimestamp(currentTime);
+    await AsyncStorage.setItem('lastResetTimestamp', JSON.stringify(currentTime));
+  };
+
+  // UseEffect hook to check for reset condition every minute
+  useEffect(() => {
+    const checkReset = async () => {
+      const currentTime = new Date().getTime();
+      const storedTimestamp = await AsyncStorage.getItem('lastResetTimestamp');
+      const lastResetTimestamp = storedTimestamp ? JSON.parse(storedTimestamp) : 0;
+  
+      // Check if a day has passed since the last reset
+      if (currentTime - lastResetTimestamp >= 30000) { // 86400000 milliseconds = 24 hours, 60000 = 1 minute
+        await resetProgressBars();
+        await AsyncStorage.setItem('lastResetTimestamp', JSON.stringify(currentTime));
+      }
+    };
+  
+    // Check every 24 hours
+    const interval = setInterval(() => {
+      checkReset();
+    }, 30000); // 86400000 milliseconds = 24 hours, 60000 = 1 minute
+  
+    // Run checkReset immediately on component mount
+    checkReset();
+  
+    return () => clearInterval(interval); // Cleanup interval on component unmount
+  }, []);
 
 
 
@@ -82,8 +154,15 @@ function HomeScreen(){
 
       <Image
         style={styles.petImage}
-        source={images[states[index]]}
+        source={images[imageKey]}
+
       />
+
+      <Text>{emotionText}</Text>
+
+      <TouchableOpacity onPress={resetProgressBars} style={styles.testButtonStyle}>
+        <Text style={styles.buttonText}>Test Reset</Text>
+      </TouchableOpacity>
 
       <View style={styles.inlineContainer}>
         <Text>Water </Text>
@@ -213,7 +292,7 @@ function MyTabs() {
       <Tab.Screen name="Status" component={StatusScreen} />
       <Tab.Screen name="Decoration" component={DecorationScreen} />
       <Tab.Screen name="Trophies" component={TrophiesScreen} />
-      <Tab.Screen name="Map" component={MapScreen} />
+      
     </Tab.Navigator>
   );
 }
@@ -248,7 +327,7 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  containerHome: {
+    containerHome: {
     alignItems: 'center',
     padding: 2,
     justifyContent: 'space-between',
@@ -263,6 +342,14 @@ const styles = StyleSheet.create({
     marginTop: 20
       
   },
+    testButtonStyle: {
+    backgroundColor: 'red', // Example color for visibility
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
+    marginTop: 20
+  },
+  
     buttonStyle: {
     backgroundColor: '#DA63E9', // Example background color
     paddingHorizontal: 10,
@@ -293,11 +380,7 @@ const styles = StyleSheet.create({
     width: 300,
     height: 300,
     resizeMode: 'contain'
-    },
-    containerHome: {
-    alignItems: 'center',
-    padding: 2,
-    justifyContent: 'space-between'
+    
   },
   elementHome: {
     alignItems: 'center',
