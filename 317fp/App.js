@@ -11,6 +11,9 @@ import * as Progress from 'react-native-progress';
 import Checkbox from 'expo-checkbox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import MapView, { Marker, Polyline } from "react-native-maps";
+import * as Location from 'expo-location';
+
 //Progress Bar: https://www.npmjs.com/package/react-native-progress
 
 //Firebase Stuff
@@ -291,6 +294,7 @@ function MyTabs() {
       <Tab.Screen name="Status" component={StatusScreen} />
       <Tab.Screen name="Decoration" component={DecorationScreen} />
       <Tab.Screen name="Trophies" component={TrophiesScreen} />
+      <Tab.Screen name="Map" component={MapScreen} />
     </Tab.Navigator>
   );
 }
