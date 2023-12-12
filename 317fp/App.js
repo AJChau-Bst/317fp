@@ -23,30 +23,10 @@ import { // for email/password authentication:
   signOut
 } from "firebase/auth";
 
-// import MapView, { Marker } from 'react-native-maps';
-// import * as Location from 'expo-location';
-
-//Progress Bar: https://www.npmjs.com/package/react-native-progress
-
-//Firebase Stuff
-// import { initializeApp } from 'firebase/app';
-// import { // access to authentication features:
-//          getAuth, 
-//          // for logging out:
-//          signOut
-// } from "firebase/auth";
-// import { // access to Firestore features:
-//          getFirestore, 
-// } from "firebase/firestore";
-
-// // New for images:
-// import { // access to Firebase storage features (for files like images, video, etc.)
-//          getStorage, 
-// } from "firebase/storage";
-
-// Initialize Firebase
-// const firebaseApp = initializeApp(firebaseConfig);
-// const auth = getAuth(firebaseApp);
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import 'firebase/compat/firestore';
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDEVXzUI5empQDcg9s6b6kskX4K3xujPoQ",
@@ -57,14 +37,11 @@ const firebaseConfig = {
   appId: "1:854675465399:web:a0c32269a0a878874c1932"
 };
 
+
 const app = initializeApp(firebaseConfig);
-// Export firestore database
-// It will be imported into your react app whenever it is needed
-const db = getFirestore(app);
+const auth = getAuth(app);
+const db = getFirestore();
 
-
-
-// Global Use States
 
 const images = {
   happy: require('./happycat.png'),
@@ -567,7 +544,7 @@ function MyStack() {
   return (
     <stackN.Navigator>
       <stackN.Screen name="Log In" component={SignInScreen} />
-      <stackN.Screen name="Log In" component={SignUpScreen} />
+      <stackN.Screen name="Sign Up" component={SignUpScreen} />
       <stackN.Screen name="Main Screen" component={UserScreen}
       options={{
           headerRight: () => (
