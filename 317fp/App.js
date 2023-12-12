@@ -3,16 +3,25 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { createStackNavigator } from '@react-navigation/stack';
 import * as React from 'react';
-import { useState, useEffect } from 'react';
-import { Button, Text, View, TextInput, StyleSheet, Image, Slider, TouchableOpacity } from 'react-native';
+import { useState, useEffect, createContext, useContext } from 'react';
+import { Button, Text, View, TextInput, StyleSheet, Image, Slider, TouchableOpacity, Scroll, SafeAreaView } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native'
 import * as Progress from 'react-native-progress';
 import Checkbox from 'expo-checkbox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import * as Location from 'expo-location';
 import { BarChart } from 'react-native-chart-kit';
 import { Dimensions, ScrollView } from 'react-native';
+import MapView, { Marker, Polyline } from "react-native-maps";
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { collection, addDoc } from "firebase/firestore";
+import { // for email/password authentication: 
+  createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification,
+  // for logging out:
+  signOut
+} from "firebase/auth";
 
 // import MapView, { Marker } from 'react-native-maps';
 // import * as Location from 'expo-location';
@@ -39,61 +48,109 @@ import { Dimensions, ScrollView } from 'react-native';
 // const firebaseApp = initializeApp(firebaseConfig);
 // const auth = getAuth(firebaseApp);
 
-// TODO: Replace the following with your app's Firebase project configuration
-// const firebaseConfig = {
-//   apiKey: "AIzaSyDEVXzUI5empQDcg9s6b6kskX4K3xujPoQ",
-//   authDomain: "cs317final.firebaseapp.com",
-//   projectId: "cs317final",
-//   storageBucket: "cs317final.appspot.com",
-//   messagingSenderId: "854675465399",
-//   appId: "1:854675465399:web:a0c32269a0a878874c1932"
-// };
+const firebaseConfig = {
+  apiKey: "AIzaSyDEVXzUI5empQDcg9s6b6kskX4K3xujPoQ",
+  authDomain: "cs317final.firebaseapp.com",
+  projectId: "cs317final",
+  storageBucket: "cs317final.appspot.com",
+  messagingSenderId: "854675465399",
+  appId: "1:854675465399:web:a0c32269a0a878874c1932"
+};
+
+const app = initializeApp(firebaseConfig);
+// Export firestore database
+// It will be imported into your react app whenever it is needed
+const db = getFirestore(app);
+
+
+
+// Global Use States
 
 const images = {
   happy: require('./happycat.png'),
   sad: require('./sadcat.png'),
   neutral: require('./neutralcat.png')
   // ... other images
-};
+}
+
+const healthContext = createContext({
+  checkedBreakfast: null, 
+  setBreakfast: false, 
+  checkedLunch: null, 
+  setCheckedLunch: false , 
+  checkedDinner: null, 
+  setCheckedDinner: false, 
+  waterProgress: null, 
+  setWaterProgress: 0, 
+  hygieneProgress: null, 
+  setHygieneProgress:0,
+  sleepProgress: null,
+  setSleepProgress:0
+
+});
 
 function MapScreen() {
-  const [location, setLocation] = useState(null);
-  const [errorMsg, setErrorMsg] = useState(null);
+  // let subscription = null;
+  // const [location, setLocation] = useState(null);
+  // const [errorMsg, setErrorMsg] = useState(null);
+  const [showStartRec, setStartRec] = useState(true);
+  const [showEndRec, setEndRec] = useState(false);
+  // const [myCoord, setMyCoord] = useState(null);
+  // const [coords, setCoords] = useState([
+  //   {
+  //     "latitude": 42.2938,
+  //     "longitude": -71.30128
+  //   },
+  //   {
+  //     "latitude": 42.29276,
+  //     "longitude": -71.30063
+  //   },
+  //   {
+  //     "latitude": 42.29161,
+  //     "longitude": -71.30172
+  //   }]);
+  //   const [permissionText, setPermissionText] 
+  //   = useState('Location permission not requested yet');
 
-  useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
-        return;
-      }
+  // useEffect(() => {
+  //   (async () => {
+  //     let { status } = await Location.requestForegroundPermissionsAsync();
+  //     if (status !== 'granted') {
+  //       setErrorMsg('Permission to access location was denied');
+  //       return;
+  //     }
 
-      let currentLocation = await Location.getCurrentPositionAsync({});
-      setLocation(currentLocation);
-    })();
-  }, []);
-
+  //     let currentLocation = await Location.getCurrentPositionAsync({});
+  //     setLocation(currentLocation);
+  //   })();
+  // }, []);
   return (
-    <View style={{ flex: 1 }}>
-      {location ? (
-        <MapView
-          style={{ flex: 1 }}
-          initialRegion={{
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
-          }}>
-          <Marker
-            coordinate={{
-              latitude: location.coords.latitude,
-              longitude: location.coords.longitude,
-            }}
-          />
-        </MapView>
-      ) : <Text>{errorMsg}</Text>}
-    </View>
+<SafeAreaView style={styles.container}>
+    <MapView style={styles.map} 
+    initialRegion={{
+    latitude: 41,
+    longitude: -72,
+    latitudeDelta: 0.02,
+    longitudeDelta: 0.02,
+    }}
+    showsCompass={true} 
+    showsUserLocation={true} 
+    rotateEnabled={true}
+  >
+  </MapView>
+  <View style={styles.controls}>
+        {showStartRec && <Button title="Start Tracking" onPress={startTracking} color='green'/>}
+        {showEndRec && <Button title="Stop Tracking" onPress={stopTracking} color='red'/>}
+        </View>
+    </SafeAreaView>
   );
+}
+function startTracking(){
+  return 0;
+}
+
+function stopTracking(){
+  return 0;
 }
 
 function HomeScreen(){
@@ -149,7 +206,7 @@ function HomeScreen(){
 
 
   //having progress bars automatically reset at the end of the day
-  const [lastResetDate, setLastResetDate] = useState(null);
+  //const [lastResetDate, setLastResetDate] = useState(null);
 
   // Function to reset progress bars
   const resetProgressBars = async () => {
@@ -162,7 +219,7 @@ function HomeScreen(){
 
     // Update the last reset timestamp to the current time
     const currentTime = new Date().getTime();
-    setLastResetTimestamp(currentTime);
+    //setLastResetTimestamp(currentTime);
     await AsyncStorage.setItem('lastResetTimestamp', JSON.stringify(currentTime));
   };
 
@@ -194,85 +251,87 @@ function HomeScreen(){
 
 
   return (
-    <View style={styles.containerHome}>
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.containerHome}>
 
-      <Image
-        style={styles.petImage}
-        source={images[imageKey]}
+        <Image
+          style={styles.petImage}
+          source={images[imageKey]}
 
-      />
+        />
 
-      <Text>{emotionText}</Text>
+        <Text>{emotionText}</Text>
 
-      <TouchableOpacity onPress={resetProgressBars} style={styles.testButtonStyle}>
-        <Text style={styles.buttonText}>Test Reset</Text>
-      </TouchableOpacity>
+        <TouchableOpacity onPress={resetProgressBars} style={styles.testButtonStyle}>
+          <Text style={styles.buttonText}>Test Reset</Text>
+        </TouchableOpacity>
+
+        <View style={styles.inlineContainer}>
+          <Text>Water </Text>
+          <Progress.Bar 
+            progress={waterProgress} 
+            width={200} 
+            height={30} 
+            borderRadius={8} 
+            color='pink'/>
+          <TouchableOpacity onPress={handleAddWater} style={styles.buttonStyle}>
+            <Text style={styles.buttonText}>Add</Text>
+          </TouchableOpacity>
+        </View>
+
+      <View style={{ flexDirection: 'row' }}>
+      <Text>Breakfast!</Text>
+      <Checkbox
+        style = {styles.elementHome}
+        value={checkedBreakfast} 
+        onValueChange={setCheckedBreakfast} />
+        <Text>Lunch!</Text>
+      <Checkbox
+        style = {styles.elementHome}
+        value={checkedLunch} 
+        onValueChange={setCheckedLunch} />
+        <Text>Dinner!</Text>
+      <Checkbox
+        style = {styles.elementHome}
+        value={checkedDinner} 
+        onValueChange={setCheckedDinner} />   
+      </View>  
 
       <View style={styles.inlineContainer}>
-        <Text>Water </Text>
+        <Text>Sleep </Text>
         <Progress.Bar 
-          progress={waterProgress} 
+          progress={sleepProgress} 
           width={200} 
-          height={30} 
-          borderRadius={8} 
-          color='pink'/>
-        <TouchableOpacity onPress={handleAddWater} style={styles.buttonStyle}>
+          height = {30} 
+          borderRadius = {8} 
+          color = 'blue'/>
+        <TouchableOpacity onPress={handleAddSleep} style={styles.buttonStyle}>
           <Text style={styles.buttonText}>Add</Text>
         </TouchableOpacity>
       </View>
 
-    <View style={{ flexDirection: 'row' }}>
-    <Text>Breakfast!</Text>
-    <Checkbox
-      style = {styles.elementHome}
-      value={checkedBreakfast} 
-      onValueChange={setCheckedBreakfast} />
-      <Text>Lunch!</Text>
-    <Checkbox
-      style = {styles.elementHome}
-      value={checkedLunch} 
-      onValueChange={setCheckedLunch} />
-      <Text>Dinner!</Text>
-    <Checkbox
-      style = {styles.elementHome}
-      value={checkedDinner} 
-      onValueChange={setCheckedDinner} />   
-    </View>  
-
-    <View style={styles.inlineContainer}>
-      <Text>Sleep </Text>
-      <Progress.Bar 
-        progress={sleepProgress} 
+        
+      <View style={styles.inlineContainer}>
+        <Text>Hygiene </Text>
+        <Progress.Bar 
+        progress={hygieneProgress} 
         width={200} 
         height = {30} 
         borderRadius = {8} 
-        color = 'blue'/>
-      <TouchableOpacity onPress={handleAddSleep} style={styles.buttonStyle}>
-        <Text style={styles.buttonText}>Add</Text>
-      </TouchableOpacity>
-    </View>
-
+        color = 'green'/>
+        <TouchableOpacity onPress={handleAddHygiene} style={styles.buttonStyle}>
+          <Text style={styles.buttonText}>Add</Text>
+        </TouchableOpacity>
+      </View>
       
-    <View style={styles.inlineContainer}>
-      <Text>Hygiene </Text>
-      <Progress.Bar 
-      progress={hygieneProgress} 
-      width={200} 
-      height = {30} 
-      borderRadius = {8} 
-      color = 'green'/>
-      <TouchableOpacity onPress={handleAddHygiene} style={styles.buttonStyle}>
-        <Text style={styles.buttonText}>Add</Text>
-      </TouchableOpacity>
-    </View>
-    
-  </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 function SocialScreen() {
   return (
-    <Text>Settings!</Text>
+    <Text>Social!</Text>
   );
 }
 
@@ -281,9 +340,12 @@ const formatYAxisLabel = (value) => {
   return `${value * 100}`;
 };
 
-function StatusScreen({ checkedBreakfast, checkedLunch, checkedDinner, waterProgress, sleepProgress, hygieneProgress }) {
+function StatusScreen({ checkedBreakfast, checkedLunch, checkedDinner, waterProgress, hygieneProgress }) {
   const screenWidth = Dimensions.get('window').width;
   const chartWidth = screenWidth * 0.6;
+
+  const {sleepProgress, setSleepProgress} = useContext(healthContext);
+
 
   const mealData = {
     labels: ["Day 1", "Day 2", "Day 3"],
@@ -326,7 +388,7 @@ function StatusScreen({ checkedBreakfast, checkedLunch, checkedDinner, waterProg
   };
 
   const chartConfig = {
-    backgroundColor: '#e26a00',
+    backgroundColor: 'blue',
     backgroundGradientFrom: '#fb8c00',
     backgroundGradientTo: '#ffa726',
     decimalPlaces: 2,
@@ -388,20 +450,35 @@ function StatusScreen({ checkedBreakfast, checkedLunch, checkedDinner, waterProg
   );
 }
 
-
-
-
-
-
 function AccountScreen() {
   return (
-    <Text>Settings!</Text>
+    <Text>Account!</Text>
   );
 }
 
 function SettingsScreen() {
+  const [friend, addFriend] = useState('');
+  const uploadString = async (stringToUpload) => {
+    try {
+      // Get the reference to the collection
+      const newFriendsCollectionRef = collection(db, "newFriends");
+  
+      // Add the string to the collection
+      await addDoc(newFriendsCollectionRef, {
+        string: friend,
+      });
+      console.log("String uploaded successfully!");
+    } catch (error) {
+      console.error("Error uploading string:", error);
+    }
+  }
   return (
-    <Text>Settings!</Text>
+<View style={styles.container}>
+    <Text> Enter Friend Username To Add: </Text>
+    <TextInput style={styles.input}
+      onSubmitEditing={(value) => addFriend(value.nativeEvent.text)} />
+    <Button title="Submit" onPress={() => uploadString()} color='green'/>
+    </View>
   );
 }
 
@@ -429,6 +506,33 @@ function SignInScreen({navigation}){
       onSubmitEditing={(value) => setPassword(value.nativeEvent.text)}
     />
     <Button title="Next Page" onPress={() => navigation.navigate('Main Screen')} color='green'/>
+    <Button title="Sign Up" onPress={() => navigation.navigate('Sign Up')} color='blue'/>
+    </View>
+  )
+}
+
+function SignUpScreen({navigation}){
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+       // Invoke Firebase authentication API for Email/Password sign up 
+       createUserWithEmailAndPassword(auth, username, password)
+       .then((userCredential) => {
+         console.log(`signUpUserEmailPassword: sign up for email ${loginProps.email} succeeded (but email still needs verification).`);
+       })
+  return(
+    <View style={styles.container}>
+    <Text> Username: </Text>
+    <TextInput style={styles.input} label="Username"
+      onSubmitEditing={(value) => setUsername(value.nativeEvent.text)} />
+    <Text> Password: </Text>
+    <TextInput
+      style={styles.input}
+      label="Password"
+      secureTextEntry
+      onSubmitEditing={(value) => setPassword(value.nativeEvent.text)}
+    />
+    <Button title="Submit" onPress={() => navigation.navigate('Main Screen')} color='green'/>
     </View>
   )
 }
@@ -437,41 +541,22 @@ function SignInScreen({navigation}){
 const Tab = createBottomTabNavigator();
 
 function MyTabs() {
-
   const [checkedBreakfast, setCheckedBreakfast] = React.useState(false);
   const [checkedLunch, setCheckedLunch] = React.useState(false);
   const [checkedDinner, setCheckedDinner] = React.useState(false);
   const [waterProgress, setWaterProgress] = React.useState(0);
   const [sleepProgress, setSleepProgress] = React.useState(0);
   const [hygieneProgress, setHygieneProgress] = React.useState(0);
-
   return (
+    <healthContext.Provider value = {{checkedBreakfast, setCheckedBreakfast, checkedLunch, setCheckedLunch, checkedDinner, setCheckedDinner, waterProgress, setWaterProgress, hygieneProgress, setHygieneProgress, sleepProgress, setSleepProgress}}>
     <Tab.Navigator>
-      <Tab.Screen name="Your Pet" component={() => <HomeScreen 
-        checkedBreakfast={checkedBreakfast} setCheckedBreakfast={setCheckedBreakfast}
-        checkedLunch={checkedLunch} setCheckedLunch={setCheckedLunch}
-        checkedDinner={checkedDinner} setCheckedDinner={setCheckedDinner}
-        waterProgress={waterProgress} setWaterProgress={setWaterProgress}
-        sleepProgress={sleepProgress} setSleepProgress={setSleepProgress}
-        hygieneProgress={hygieneProgress} setHygieneProgress={setHygieneProgress}
-      />} />
+      <Tab.Screen name="Your Pet" component= {HomeScreen } />
       <Tab.Screen name="Social" component={SocialScreen} />
-      
-      <Tab.Screen name="Status" component={() => <StatusScreen
-        checkedBreakfast={checkedBreakfast}
-        checkedLunch={checkedLunch}
-        checkedDinner={checkedDinner}
-        waterProgress={waterProgress}
-        sleepProgress={sleepProgress}
-        hygieneProgress={hygieneProgress}
-      />} />
-
+      <Tab.Screen name="Status" component={StatusScreen} />
       <Tab.Screen name="Map" component={MapScreen} />
       <Tab.Screen name="Account" component={AccountScreen} />
-
-      
-      
     </Tab.Navigator>
+    </healthContext.Provider>
   );
 }
 
@@ -482,6 +567,7 @@ function MyStack() {
   return (
     <stackN.Navigator>
       <stackN.Screen name="Log In" component={SignInScreen} />
+      <stackN.Screen name="Log In" component={SignUpScreen} />
       <stackN.Screen name="Main Screen" component={UserScreen}
       options={{
           headerRight: () => (
@@ -497,6 +583,7 @@ function MyStack() {
 }
 
 export default function App() {
+  
   return (
     <NavigationContainer>
       <MyStack/>
@@ -506,9 +593,9 @@ export default function App() {
 
 const styles = StyleSheet.create({
     containerHome: {
-    alignItems: 'center',
+    // alignItems: 'center',
     padding: 2,
-    justifyContent: 'space-between',
+    // justifyContent: 'space-between',
 
     // Add space between inlineContainer views
     paddingBottom: 10, // Space at the bottom of each container
@@ -567,6 +654,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     margin: 10,
-    
+  },
+  map: {
+    flex: 2, 
+    width: '100%',
+    height: '100%',
+  },
+  controls: {
+    marginTop: 10, 
+    padding: 10, 
+    borderRadius: 10, 
+    backgroundColor: 'cyan'
   }
 });
