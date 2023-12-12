@@ -9,6 +9,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native'
 import * as Progress from 'react-native-progress';
 import Checkbox from 'expo-checkbox';
+
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { BarChart } from 'react-native-chart-kit';
@@ -55,46 +57,6 @@ const images = {
   neutral: require('./neutralcat.png')
   // ... other images
 };
-
-function MapScreen() {
-  const [location, setLocation] = useState(null);
-  const [errorMsg, setErrorMsg] = useState(null);
-
-  useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
-        return;
-      }
-
-      let currentLocation = await Location.getCurrentPositionAsync({});
-      setLocation(currentLocation);
-    })();
-  }, []);
-
-  return (
-    <View style={{ flex: 1 }}>
-      {location ? (
-        <MapView
-          style={{ flex: 1 }}
-          initialRegion={{
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
-          }}>
-          <Marker
-            coordinate={{
-              latitude: location.coords.latitude,
-              longitude: location.coords.longitude,
-            }}
-          />
-        </MapView>
-      ) : <Text>{errorMsg}</Text>}
-    </View>
-  );
-}
 
 function HomeScreen(){
   const [checkedBreakfast, setCheckedBreakfast] = React.useState(false);
@@ -290,7 +252,7 @@ function StatusScreen({ checkedBreakfast, checkedLunch, checkedDinner, waterProg
     datasets: [{
       data: [
         ((checkedBreakfast ? 100 : 0) + (checkedLunch ? 100 : 0) + (checkedDinner ? 100 : 0)) / 3,
-        // The above line is repeated for other days, replace with actual data
+        // Include other days' data here
       ]
     }]
   };
@@ -300,7 +262,7 @@ function StatusScreen({ checkedBreakfast, checkedLunch, checkedDinner, waterProg
     datasets: [{
       data: [
         (waterProgress / 15) * 100,
-        // Repeat for other days, replace with actual data
+        // Include other days' data here
       ]
     }]
   };
@@ -310,7 +272,7 @@ function StatusScreen({ checkedBreakfast, checkedLunch, checkedDinner, waterProg
     datasets: [{
       data: [
         (sleepProgress / 7) * 100,
-        // Repeat for other days, replace with actual data
+        // Include other days' data here
       ]
     }]
   };
@@ -320,7 +282,7 @@ function StatusScreen({ checkedBreakfast, checkedLunch, checkedDinner, waterProg
     datasets: [{
       data: [
         (hygieneProgress / 7) * 100,
-        // Repeat for other days, replace with actual data
+        // Include other days' data here
       ]
     }]
   };
@@ -392,7 +354,6 @@ function StatusScreen({ checkedBreakfast, checkedLunch, checkedDinner, waterProg
 
 
 
-
 function AccountScreen() {
   return (
     <Text>Settings!</Text>
@@ -411,6 +372,9 @@ function UserScreen(){
   );
 }
 
+function TrophiesScreen(){
+
+}
 
 function SignInScreen({navigation}){
   
