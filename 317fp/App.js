@@ -316,8 +316,23 @@ function HomeScreen(){
 }
 
 function SocialScreen() {
+  const [moodBoardMessage, setMoodBoardMessage] = useState("");
+  const [friendMessages, setFriendMessages] = useState([]);
+
+  // ideally, this function grabs your friend's messages from Firestore,
+  // and will display them-- we'll need their pet's name as the display name
+  function populateMoodBoard(){
+    return 0;
+  }
+  function updateMoodBoardMessage() {
+    return 0;
+  }
+  
   return (
-    <Text>Social!</Text>
+    <View>
+      <Text>Social!</Text>
+      {populateMoodBoard}
+    </View>
   );
 }
 
