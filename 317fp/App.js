@@ -1,12 +1,3 @@
-/*Questions To Ask Lyn
-
--Log Out Button-- passing props in between files?
--setDoc error: Document references must have an even number of segments, but newFriend has 1.]
-- Turning Use States into Contexts or Props for movement between screens
-- Best way to format this data? -- Maybe implement this idea on a save button. 
-
-*/
-
 import { NavigationContainer, Navigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
@@ -24,7 +15,7 @@ import { BarChart } from 'react-native-chart-kit';
 import { Dimensions, ScrollView } from 'react-native';
 import MapView, { Marker, Polyline } from "react-native-maps";
 import SignInOutPScreen from './SignInOutPScreen';
-
+import StateContext from './StateContext.js';
 import { emailOf } from './utils.js';
 import { firebaseConfig } from './firebaseConfig.js'
 import { initializeApp } from 'firebase/app';
@@ -40,7 +31,10 @@ import { // for Firestore access (to store messages)
   collection, doc, addDoc, setDoc,
   query, where, getDocs
 } from "firebase/firestore";
-// Initialize Firebase
+
+export default function App() {
+
+  // Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 
@@ -56,28 +50,38 @@ const db = getFirestore(firebaseApp); // for storaging messages in Firestore
 //                       }
 
 
+const [loggedInUser, setLoggedInUser] = React.useState(null);
+const [email, setEmail] = useState(""); // Provide default email for testing
+const [password, setPassword] = useState(""); // Provide default passwored for testing
+
+const [checkedBreakfast, setCheckedBreakfast] = React.useState(false);
+const [checkedLunch, setCheckedLunch] = React.useState(false);
+const [checkedDinner, setCheckedDinner] = React.useState(false);
+const [waterProgress, setWaterProgress] = React.useState(0);
+const [hygieneProgress, setHygieneProgress] = React.useState(0);
+const [sleepProgress, setSleepProgress] = React.useState(0);
+
+const healthProps = { checkedBreakfast, setCheckedBreakfast, checkedLunch, setCheckedLunch, checkedDinner, setCheckedDinner, waterProgress, setWaterProgress, hygieneProgress, setHygieneProgress, sleepProgress, setSleepProgress};
+const loginProps = {loggedInUser, setLoggedInUser, logOut, email, setEmail, password, setPassword}
+
+const allProps = {loginProps, healthProps}
+
+function logOut() {
+    console.log('logOut'); 
+    console.log(`logOut: emailOf(auth.currentUser)=${emailOf(auth.currentUser)}`);
+    console.log(`logOut: emailOf(loggedInUser)=${emailOf(loggedInUser)}`);
+    console.log(`logOut: setLoggedInUser(null)`);
+    setLoggedInUser(null);
+    console.log('logOut: signOut(auth)');
+    signOut(auth); // Will eventually set auth.currentUser to null     
+  }
+
 const images = {
   happy: require('./happycat.png'),
   sad: require('./sadcat.png'),
   neutral: require('./neutralcat.png')
   // ... other images
 }
-
-const healthContext = createContext({
-  checkedBreakfast: null, 
-  setBreakfast: false, 
-  checkedLunch: null, 
-  setCheckedLunch: false , 
-  checkedDinner: null, 
-  setCheckedDinner: false, 
-  waterProgress: null, 
-  setWaterProgress: 0, 
-  hygieneProgress: null, 
-  setHygieneProgress:0,
-  sleepProgress: null,
-  setSleepProgress:0
-
-});
 
 function MapScreen() {
   // let subscription = null;
@@ -144,22 +148,14 @@ function stopTracking(){
 }
 
 function HomeScreen(){
-  const [checkedBreakfast, setCheckedBreakfast] = React.useState(false);
-  const [checkedLunch, setCheckedLunch] = React.useState(false);
-  const [checkedDinner, setCheckedDinner] = React.useState(false);
   const toggleCheckbox = () => setChecked(!checked);
-
-  const [waterProgress, setWaterProgress] = React.useState(0);
   const handleAddWater = () => {
     setWaterProgress(prevProgress => Math.min(prevProgress + 1 / 15, 1)); // Increment by 1/15 because 15 cups of water, max is 1
   };
-
-  const [sleepProgress, setSleepProgress] = React.useState(0);
   const handleAddSleep = () => {
     setSleepProgress(prevProgress => Math.min(prevProgress + 1 / 7, 1)); // Increment by 1/15 because 15 cups of water, max is 1
   };
 
-  const [hygieneProgress, setHygieneProgress] = React.useState(0);
   const handleAddHygiene = () => {
     setHygieneProgress(prevProgress => Math.min(prevProgress + 1 / 7, 1)); // Increment by 1/15 because 15 cups of water, max is 1
   };
@@ -334,9 +330,6 @@ function StatusScreen({ checkedBreakfast, checkedLunch, checkedDinner, waterProg
   const screenWidth = Dimensions.get('window').width;
   const chartWidth = screenWidth * 0.6;
 
-  const {sleepProgress, setSleepProgress} = useContext(healthContext);
-
-
   const mealData = {
     labels: ["Day 1", "Day 2", "Day 3"],
     datasets: [{
@@ -481,35 +474,15 @@ function UserScreen(){
 }
 
 
-function SignInScreen({navigation}){
-
+function SignInScreen(){
   const defaultEmail = "chaujannette@gmail.com";
   const defaultPassword = 'hellooo'
+
+  setEmail("chaujannette@gmail.com")
+  setPassword('hellooo')
   // Shared state for authentication 
-  const [email, setEmail] = useState(defaultEmail); // Provide default email for testing
-  const [password, setPassword] = useState(defaultPassword); // Provide default passwored for testing
   // const [email, setEmail] = useState(''); // Provide default email for testing
   // const [password, setPassword] = useState(''); // Provide default passwored for testing
-  const [loggedInUser, setLoggedInUser] = useState(null);
-
-  function logOut() {
-      console.log('logOut'); 
-      console.log(`logOut: emailOf(auth.currentUser)=${emailOf(auth.currentUser)}`);
-      console.log(`logOut: emailOf(loggedInUser)=${emailOf(loggedInUser)}`);
-      console.log(`logOut: setLoggedInUser(null)`);
-      setLoggedInUser(null);
-      console.log('logOut: signOut(auth)');
-      signOut(auth); // Will eventually set auth.currentUser to null     
-    }
-  
-    const loginProps = { 
-      defaultEmail, defaultPassword, 
-      email, setEmail, 
-      password, setPassword, 
-      loggedInUser, setLoggedInUser, logOut
-     }
-
-
   return(
     <View style={styles.container}>
       <SignInOutPScreen 
@@ -529,7 +502,6 @@ function MyTabs() {
   const [sleepProgress, setSleepProgress] = React.useState(0);
   const [hygieneProgress, setHygieneProgress] = React.useState(0);
   return (
-    <healthContext.Provider value = {{checkedBreakfast, setCheckedBreakfast, checkedLunch, setCheckedLunch, checkedDinner, setCheckedDinner, waterProgress, setWaterProgress, hygieneProgress, setHygieneProgress, sleepProgress, setSleepProgress}}>
     <Tab.Navigator>
       <Tab.Screen name="Your Pet" component= {HomeScreen } />
       <Tab.Screen name="Social" component={SocialScreen} />
@@ -537,7 +509,6 @@ function MyTabs() {
       <Tab.Screen name="Map" component={MapScreen} />
       <Tab.Screen name="Account" component={AccountScreen} />
     </Tab.Navigator>
-    </healthContext.Provider>
   );
 }
 
@@ -546,6 +517,7 @@ const stackN= createStackNavigator();
 function MyStack() {
   const navigation = useNavigation();
   return (
+    <StateContext.Provider value={allProps}>
     <stackN.Navigator>
       <stackN.Screen name="Log In" component={SignInScreen} />
       <stackN.Screen name="Main Screen" component={UserScreen}
@@ -559,10 +531,9 @@ function MyStack() {
         }} />
       <stackN.Screen name="Settings" component={SettingsScreen} />
     </stackN.Navigator>
+    </StateContext.Provider>
   );
 }
-
-export default function App() {
   
   return (
     <NavigationContainer>
