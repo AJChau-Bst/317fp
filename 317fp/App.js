@@ -1,3 +1,12 @@
+/*Questions To Ask Lyn
+
+-Log Out Button-- passing props in between files?
+-setDoc error: Document references must have an even number of segments, but newFriend has 1.]
+- Turning Use States into Contexts or Props for movement between screens
+- Best way to format this data? -- Maybe implement this idea on a save button. 
+
+*/
+
 import { NavigationContainer, Navigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
@@ -14,33 +23,37 @@ import * as Location from 'expo-location';
 import { BarChart } from 'react-native-chart-kit';
 import { Dimensions, ScrollView } from 'react-native';
 import MapView, { Marker, Polyline } from "react-native-maps";
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { collection, addDoc } from "firebase/firestore";
-import { // for email/password authentication: 
-  createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification,
-  // for logging out:
-  signOut
+import SignInOutPScreen from './SignInOutPScreen';
+
+import { emailOf } from './utils.js';
+import { firebaseConfig } from './firebaseConfig.js'
+import { initializeApp } from 'firebase/app';
+import { // access to authentication features:
+         getAuth, 
+         // for logging out:
+         signOut
 } from "firebase/auth";
+import {
+         getFirestore, 
+} from "firebase/firestore";
+import { // for Firestore access (to store messages)
+  collection, doc, addDoc, setDoc,
+  query, where, getDocs
+} from "firebase/firestore";
+// Initialize Firebase
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
 
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
-import 'firebase/compat/firestore';
-import { getAuth } from "firebase/auth";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDEVXzUI5empQDcg9s6b6kskX4K3xujPoQ",
-  authDomain: "cs317final.firebaseapp.com",
-  projectId: "cs317final",
-  storageBucket: "cs317final.appspot.com",
-  messagingSenderId: "854675465399",
-  appId: "1:854675465399:web:a0c32269a0a878874c1932"
-};
+// New for images:
+const db = getFirestore(firebaseApp); // for storaging messages in Firestore
 
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore();
+// const storage = getStorage(firebaseApp, 
+//     firebaseConfig.storageBucket) // for storaging images in Firebase storage
+
+// const firebaseProps = {auth, db, 
+//                        storage // New for images
+//                       }
 
 
 const images = {
@@ -437,13 +450,12 @@ function SettingsScreen() {
   const [friend, addFriend] = useState('');
   const uploadString = async (stringToUpload) => {
     try {
-      // Get the reference to the collection
-      const newFriendsCollectionRef = collection(db, "newFriends");
   
-      // Add the string to the collection
-      await addDoc(newFriendsCollectionRef, {
-        string: friend,
-      });
+      setDoc(doc(db, "newFriend"), 
+      {
+        'friend': friend,
+        "I'm reeally Trying here": "filler test whoop" 
+      })
       console.log("String uploaded successfully!");
     } catch (error) {
       console.error("Error uploading string:", error);
@@ -455,6 +467,9 @@ function SettingsScreen() {
     <TextInput style={styles.input}
       onSubmitEditing={(value) => addFriend(value.nativeEvent.text)} />
     <Button title="Submit" onPress={() => uploadString()} color='green'/>
+    <Button title = "Log Out"
+      onPress={() => loginProps.logOut()}>
+      </Button>
     </View>
   );
 }
@@ -467,53 +482,42 @@ function UserScreen(){
 
 
 function SignInScreen({navigation}){
+
+  const defaultEmail = "chaujannette@gmail.com";
+  const defaultPassword = 'hellooo'
+  // Shared state for authentication 
+  const [email, setEmail] = useState(defaultEmail); // Provide default email for testing
+  const [password, setPassword] = useState(defaultPassword); // Provide default passwored for testing
+  // const [email, setEmail] = useState(''); // Provide default email for testing
+  // const [password, setPassword] = useState(''); // Provide default passwored for testing
+  const [loggedInUser, setLoggedInUser] = useState(null);
+
+  function logOut() {
+      console.log('logOut'); 
+      console.log(`logOut: emailOf(auth.currentUser)=${emailOf(auth.currentUser)}`);
+      console.log(`logOut: emailOf(loggedInUser)=${emailOf(loggedInUser)}`);
+      console.log(`logOut: setLoggedInUser(null)`);
+      setLoggedInUser(null);
+      console.log('logOut: signOut(auth)');
+      signOut(auth); // Will eventually set auth.currentUser to null     
+    }
   
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+    const loginProps = { 
+      defaultEmail, defaultPassword, 
+      email, setEmail, 
+      password, setPassword, 
+      loggedInUser, setLoggedInUser, logOut
+     }
+
+
   return(
     <View style={styles.container}>
-    <Text> Username: </Text>
-    <TextInput style={styles.input} label="Username"
-      onSubmitEditing={(value) => setUsername(value.nativeEvent.text)} />
-    <Text> Password: </Text>
-    <TextInput
-      style={styles.input}
-      label="Password"
-      secureTextEntry
-      onSubmitEditing={(value) => setPassword(value.nativeEvent.text)}
-    />
-    <Button title="Next Page" onPress={() => navigation.navigate('Main Screen')} color='green'/>
-    <Button title="Sign Up" onPress={() => navigation.navigate('Sign Up')} color='blue'/>
+      <SignInOutPScreen 
+        loginProps={loginProps} 
+        auth={auth}/>
     </View>
   )
 }
-
-function SignUpScreen({navigation}){
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-
-       // Invoke Firebase authentication API for Email/Password sign up 
-       createUserWithEmailAndPassword(auth, username, password)
-       .then((userCredential) => {
-         console.log(`signUpUserEmailPassword: sign up for email ${loginProps.email} succeeded (but email still needs verification).`);
-       })
-  return(
-    <View style={styles.container}>
-    <Text> Username: </Text>
-    <TextInput style={styles.input} label="Username"
-      onSubmitEditing={(value) => setUsername(value.nativeEvent.text)} />
-    <Text> Password: </Text>
-    <TextInput
-      style={styles.input}
-      label="Password"
-      secureTextEntry
-      onSubmitEditing={(value) => setPassword(value.nativeEvent.text)}
-    />
-    <Button title="Submit" onPress={() => navigation.navigate('Main Screen')} color='green'/>
-    </View>
-  )
-}
-
 
 const Tab = createBottomTabNavigator();
 
@@ -544,7 +548,6 @@ function MyStack() {
   return (
     <stackN.Navigator>
       <stackN.Screen name="Log In" component={SignInScreen} />
-      <stackN.Screen name="Sign Up" component={SignUpScreen} />
       <stackN.Screen name="Main Screen" component={UserScreen}
       options={{
           headerRight: () => (
