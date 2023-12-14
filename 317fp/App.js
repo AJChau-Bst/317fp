@@ -1,3 +1,9 @@
+/*
+Ask Lyn: 
+How to Append Friends List? 
+Write GetDoc correctly.
+
+*/
 import { NavigationContainer, Navigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
@@ -53,6 +59,7 @@ const db = getFirestore(firebaseApp); // for storaging messages in Firestore
 const [loggedInUser, setLoggedInUser] = React.useState(null);
 const [email, setEmail] = useState(""); // Provide default email for testing
 const [password, setPassword] = useState(""); // Provide default passwored for testing
+const [friend, addFriend] = useState([]);
 
 const [checkedBreakfast, setCheckedBreakfast] = React.useState(false);
 const [checkedLunch, setCheckedLunch] = React.useState(false);
@@ -60,11 +67,20 @@ const [checkedDinner, setCheckedDinner] = React.useState(false);
 const [waterProgress, setWaterProgress] = React.useState(0);
 const [hygieneProgress, setHygieneProgress] = React.useState(0);
 const [sleepProgress, setSleepProgress] = React.useState(0);
+const [petName, setPetName] = React.useState(0);
+const [statusMessage, setStatusMessage] = React.useState("")
+const [liked, setLiked] = React.useState("")//Create a Dictionary Here. 
+const [emoji, setemoji] = React.useState("")
 
-const healthProps = { checkedBreakfast, setCheckedBreakfast, checkedLunch, setCheckedLunch, checkedDinner, setCheckedDinner, waterProgress, setWaterProgress, hygieneProgress, setHygieneProgress, sleepProgress, setSleepProgress};
-const loginProps = {loggedInUser, setLoggedInUser, logOut, email, setEmail, password, setPassword}
+
+const healthProps = { checkedBreakfast, setCheckedBreakfast, checkedLunch, setCheckedLunch, checkedDinner, setCheckedDinner, waterProgress, setWaterProgress, hygieneProgress, setHygieneProgress, sleepProgress, setSleepProgress, petName, setPetName};
+const loginProps = {loggedInUser, setLoggedInUser, logOut, email, setEmail, password, setPassword, friend, addFriend}
 
 const allProps = {loginProps, healthProps}
+
+const date = new Date();
+const timestamp = date.getTime(); // millsecond timestamp
+const timestampString = timestamp.toString();
 
 function logOut() {
     console.log('logOut'); 
@@ -309,11 +325,82 @@ function HomeScreen(){
           <Text style={styles.buttonText}>Add</Text>
         </TouchableOpacity>
       </View>
+      <Button title="Save Data" onPress={() => saveData(0)} color='red'/>
       
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+function saveData(saveTrigger){
+    try {
+      setDoc(doc(db, "App Storage", email, timestampString), 
+      {
+        "timestamp": timestampString,
+        "whoSaved": saveTrigger,
+        "petName": petName,
+        'friends': friend,
+        "checkedBreakfast": checkedBreakfast, 
+        "checkedLunch":checkedLunch, 
+        "checkedDinner": checkedDinner, 
+        "waterProgress":waterProgress, 
+        "hygieneProgress":hygieneProgress,  
+        "sleepProgress":sleepProgress
+      })
+      console.log("String uploaded successfully!");
+    } catch (error) {
+      console.error("Error uploading string:", error);
+    }
+}
+
+// function readHealthData(){
+//   try {
+//     getDoc(doc(db, "App Storage", email), 
+//     {
+//       "timestamp": timestampString,
+//       "whoSaved": saveTrigger,
+//       "petName": petName,
+//       'friends': friend,
+//       "checkedBreakfast": checkedBreakfast, 
+//       "checkedLunch":checkedLunch, 
+//       "checkedDinner": checkedDinner, 
+//       "waterProgress":waterProgress, 
+//       "hygieneProgress":hygieneProgress,  
+//       "sleepProgress":sleepProgress
+//     })
+//     console.log("String uploaded successfully!");
+//   } catch (error) {
+//     console.error("Error uploading string:", error);
+//   }
+// }
+
+function saveSocialData(){
+  try {
+    setDoc(doc(db, "Friends", email), 
+    {
+      "friends": friends,
+      "timestamp": timestampString,
+      "status message": statusMessage,
+      "liked": liked,
+      "emoji": setemoji
+
+    })
+    console.log("String uploaded successfully!");
+  } catch (error) {
+    console.error("Error uploading string:", error);
+  }
+}
+
+// function addNewFriend(){
+//   try {
+//     ([
+//       "friends": friends.arrayUnion([friends])
+//   ])
+//     console.log("String uploaded successfully!");
+//   } catch (error) {
+//     console.error("Error uploading string:", error);
+//   }
+// }
 
 function SocialScreen() {
   const [moodBoardMessage, setMoodBoardMessage] = useState("");
@@ -341,7 +428,7 @@ const formatYAxisLabel = (value) => {
   return `${value * 100}`;
 };
 
-function StatusScreen({ checkedBreakfast, checkedLunch, checkedDinner, waterProgress, hygieneProgress }) {
+function StatusScreen() {
   const screenWidth = Dimensions.get('window').width;
   const chartWidth = screenWidth * 0.6;
 
@@ -448,14 +535,7 @@ function StatusScreen({ checkedBreakfast, checkedLunch, checkedDinner, waterProg
   );
 }
 
-function AccountScreen() {
-  return (
-    <Text>Account!</Text>
-  );
-}
-
 function SettingsScreen() {
-  const [friend, addFriend] = useState('');
   const uploadString = async (stringToUpload) => {
     try {
   
@@ -474,7 +554,7 @@ function SettingsScreen() {
     <Text> Enter Friend Username To Add: </Text>
     <TextInput style={styles.input}
       onSubmitEditing={(value) => addFriend(value.nativeEvent.text)} />
-    <Button title="Submit" onPress={() => uploadString()} color='green'/>
+    <Button title="Submit" onPress={() => addNewFriend} color='green'/>
     <Button title = "Log Out"
       onPress={() => loginProps.logOut()}>
       </Button>
@@ -510,19 +590,12 @@ function SignInScreen(){
 const Tab = createBottomTabNavigator();
 
 function MyTabs() {
-  const [checkedBreakfast, setCheckedBreakfast] = React.useState(false);
-  const [checkedLunch, setCheckedLunch] = React.useState(false);
-  const [checkedDinner, setCheckedDinner] = React.useState(false);
-  const [waterProgress, setWaterProgress] = React.useState(0);
-  const [sleepProgress, setSleepProgress] = React.useState(0);
-  const [hygieneProgress, setHygieneProgress] = React.useState(0);
   return (
     <Tab.Navigator>
       <Tab.Screen name="Your Pet" component= {HomeScreen } />
       <Tab.Screen name="Social" component={SocialScreen} />
       <Tab.Screen name="Status" component={StatusScreen} />
       <Tab.Screen name="Map" component={MapScreen} />
-      <Tab.Screen name="Account" component={AccountScreen} />
     </Tab.Navigator>
   );
 }
