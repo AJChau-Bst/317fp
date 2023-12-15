@@ -76,8 +76,10 @@ const [hygieneProgress, setHygieneProgress] = React.useState(0);
 const [sleepProgress, setSleepProgress] = React.useState(0);
 const [petName, setPetName] = React.useState(0);
 const [statusMessage, setStatusMessage] = React.useState("")
+const [friendMessages, setFriendMessages] = React.useState([]); //
 const [liked, setLiked] = React.useState("")//Create a Dictionary Here. 
-const [emoji, setemoji] = React.useState("")
+const [emoji, setemoji] = React.useState("");
+const [isComposingMessage, setIsComposingMessage] = React.useState(false);
 
 
 const healthProps = { checkedBreakfast, setCheckedBreakfast, checkedLunch, setCheckedLunch, checkedDinner, setCheckedDinner, waterProgress, setWaterProgress, hygieneProgress, setHygieneProgress, sleepProgress, setSleepProgress, petName, setPetName};
@@ -411,22 +413,31 @@ function saveSocialData(){
 // }
 
 function SocialScreen() {
-  const [moodBoardMessage, setMoodBoardMessage] = useState("");
-  const [friendMessages, setFriendMessages] = useState([]);
-
   // ideally, this function grabs your friend's messages from Firestore,
   // and will display them-- we'll need their pet's name as the display name
   function populateMoodBoard(){
+    //a function to format the friend messages that are displayed
+    // want to grab from the friend array --> then take the pet name
+    // and grab their status message
+    // i think it can return a JSX component 
     return 0;
   }
-  function updateMoodBoardMessage() {
+  function updateStatusMessage() {
     return 0;
   }
+    /**
+   * Open an area for message composition. Currently uses conditional formatting
+   * (controlled by isComposingMessage state variabel) to do this within ChatViewScreen,
+   * but really should be done by a Modal or separate screen. 
+   */ 
+    function composeMessage() {
+      setIsComposingMessage(true);
+    }
   
   return (
     <View>
       <Text>Social!</Text>
-      {populateMoodBoard}
+      <Text>{populateMoodBoard}</Text>
     </View>
   );
 }
