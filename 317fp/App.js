@@ -1,9 +1,16 @@
 /*
-Ask Lyn: 
-How to Append Friends List? 
-Write GetDoc correctly.
+AJ's To Do List:
+- Why is Friends so Hard. 
+- Append Friend List. 
+- Create a second collection of all messages and their emails
+- This is the social display collection. 
+- Create a get function from firebase that sets all useStates appropriately. 
+- Polish Sign In and Outt Screen, Polish Main screen
+- Create a secret Doodle Birb Button (end of Finals)
+https://firebase.google.com/docs/database/web/lists-of-data#append_to_a_list_of_data
 
 */
+
 import { NavigationContainer, Navigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
@@ -340,6 +347,7 @@ function saveData(saveTrigger){
         "whoSaved": saveTrigger,
         "petName": petName,
         'friends': friend,
+        "statusMessage": statusMessage,
         "checkedBreakfast": checkedBreakfast, 
         "checkedLunch":checkedLunch, 
         "checkedDinner": checkedDinner, 
