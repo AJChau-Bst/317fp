@@ -343,7 +343,7 @@ function HomeScreen(){
 
 function saveData(saveTrigger){
     try {
-      setDoc(doc(db, "App Storage", email, timestampString), 
+      setDoc(doc(db, "App Storage", email), 
       {
         "timestamp": timestampString,
         "whoSaved": saveTrigger,
