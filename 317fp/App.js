@@ -6,7 +6,6 @@ AJ's To Do List:
 - This is the social display collection. 
 - Create a get function from firebase that sets all useStates appropriately. 
 - Polish Sign In and Outt Screen, Polish Main screen
-- Create a secret Doodle Birb Button (end of Finals)
 https://firebase.google.com/docs/database/web/lists-of-data#append_to_a_list_of_data
 
 */
@@ -37,9 +36,7 @@ import { // access to authentication features:
          // for logging out:
          signOut
 } from "firebase/auth";
-import {
-         getFirestore, 
-} from "firebase/firestore";
+import {getFirestore} from "firebase/firestore";
 import { // for Firestore access (to store messages)
   collection, doc, addDoc, setDoc,
   query, where, getDocs
@@ -53,15 +50,6 @@ const auth = getAuth(firebaseApp);
 
 // New for images:
 const db = getFirestore(firebaseApp); // for storaging messages in Firestore
-
-
-// const storage = getStorage(firebaseApp, 
-//     firebaseConfig.storageBucket) // for storaging images in Firebase storage
-
-// const firebaseProps = {auth, db, 
-//                        storage // New for images
-//                       }
-
 
 const [loggedInUser, setLoggedInUser] = React.useState(null);
 const [email, setEmail] = useState(""); // Provide default email for testing
@@ -164,6 +152,7 @@ function MapScreen() {
     </SafeAreaView>
   );
 }
+
 function startTracking(){
   return 0;
 }
@@ -335,7 +324,7 @@ function HomeScreen(){
         </TouchableOpacity>
       </View>
       <Button title="Save Data" onPress={() => saveData(0)} color='red'/>
-      
+      <Button title="Get Data" onPress={() => getData()} color='blue'/>
       </ScrollView>
     </SafeAreaView>
   );
@@ -363,54 +352,20 @@ function saveData(saveTrigger){
     }
 }
 
-// function readHealthData(){
-//   try {
-//     getDoc(doc(db, "App Storage", email), 
-//     {
-//       "timestamp": timestampString,
-//       "whoSaved": saveTrigger,
-//       "petName": petName,
-//       'friends': friend,
-//       "checkedBreakfast": checkedBreakfast, 
-//       "checkedLunch":checkedLunch, 
-//       "checkedDinner": checkedDinner, 
-//       "waterProgress":waterProgress, 
-//       "hygieneProgress":hygieneProgress,  
-//       "sleepProgress":sleepProgress
-//     })
-//     console.log("String uploaded successfully!");
-//   } catch (error) {
-//     console.error("Error uploading string:", error);
+// function getData(){
+//   try{
+//     const docSnap = getDocs(doc(db, "App Storage", email));
+//     console.log(docSnap.data)
+//   } catch (error){
+//     console.error("Error Getting String", error)
 //   }
 // }
 
-function saveSocialData(){
-  try {
-    setDoc(doc(db, "Friends", email), 
-    {
-      "friends": friends,
-      "timestamp": timestampString,
-      "status message": statusMessage,
-      "liked": liked,
-      "emoji": setemoji
-
-    })
-    console.log("String uploaded successfully!");
-  } catch (error) {
-    console.error("Error uploading string:", error);
-  }
-}
-
-// function addNewFriend(){
-//   try {
-//     ([
-//       "friends": friends.arrayUnion([friends])
-//   ])
-//     console.log("String uploaded successfully!");
-//   } catch (error) {
-//     console.error("Error uploading string:", error);
-//   }
-// }
+// const postListRef = ref(db, 'App Storage', email, "friends");
+// const newPostRef = push(friend);
+// set(newPostRef, {
+//     // ...
+// });
 
 function SocialScreen() {
   // ideally, this function grabs your friend's messages from Firestore,
@@ -555,19 +510,19 @@ function StatusScreen() {
 }
 
 function SettingsScreen() {
-  const uploadString = async (stringToUpload) => {
-    try {
+  // const uploadString = async (stringToUpload) => {
+  //   try {
   
-      setDoc(doc(db, "newFriend"), 
-      {
-        'friend': friend,
-        "I'm reeally Trying here": "filler test whoop" 
-      })
-      console.log("String uploaded successfully!");
-    } catch (error) {
-      console.error("Error uploading string:", error);
-    }
-  }
+  //     setDoc(doc(db, "newFriend"), 
+  //     {
+  //       'friend': friend,
+  //       "I'm reeally Trying here": "filler test whoop" 
+  //     })
+  //     console.log("String uploaded successfully!");
+  //   } catch (error) {
+  //     console.error("Error uploading string:", error);
+  //   }
+  // }
   return (
 <View style={styles.container}>
     <Text> Enter Friend Username To Add: </Text>
