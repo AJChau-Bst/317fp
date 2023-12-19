@@ -38,9 +38,10 @@ import { // access to authentication features:
 } from "firebase/auth";
 import {getFirestore} from "firebase/firestore";
 import { // for Firestore access (to store messages)
-  collection, doc, addDoc, setDoc,
+  collection, getDoc, doc, addDoc, setDoc,
   query, where, getDocs
 } from "firebase/firestore";
+
 
 export default function App() {
 
@@ -164,15 +165,70 @@ function stopTracking(){
 function HomeScreen(){
   const toggleCheckbox = () => setChecked(!checked);
   const handleAddWater = () => {
-    setWaterProgress(prevProgress => Math.min(prevProgress + 1 / 15, 1)); // Increment by 1/15 because 15 cups of water, max is 1
+    setWaterProgress(previousWaterProgress => {
+      const newWaterProgress = Math.min(previousWaterProgress + 1 / 15, 1); // Increment by 1/15 because 15 cups of water, max is 1
+      saveProgressToFirebase(); // Save progress after updating
+      return newWaterProgress;
+    });
   };
+
   const handleAddSleep = () => {
-    setSleepProgress(prevProgress => Math.min(prevProgress + 1 / 7, 1)); // Increment by 1/15 because 15 cups of water, max is 1
+    setSleepProgress(previousSleepProgress => {
+      const newSleepProgress = Math.min(previousSleepProgress + 1 / 7, 1); // Increment by 1/7 because 7 hours of sleep, max is 1
+      saveProgressToFirebase(); // Save progress after updating
+      return newSleepProgress;
+    });
   };
 
   const handleAddHygiene = () => {
-    setHygieneProgress(prevProgress => Math.min(prevProgress + 1 / 7, 1)); // Increment by 1/15 because 15 cups of water, max is 1
+    setHygieneProgress(previousHygieneProgress => {
+      const newHygieneProgress = Math.min(previousHygieneProgress + 1 / 7, 1); // Increment by 1/7 because 7 steps of hygiene, max is 1
+      saveProgressToFirebase(); // Save progress after updating
+      return newHygieneProgress;
+    });
   };
+
+  function saveProgressToFirebase() {
+    // Assuming 'email' contains the current user's email
+    const docRef = doc(db, "App Storage", email);
+  
+    // Prepare the data to save
+    const dataToSave = {
+      waterProgress,
+      sleepProgress,
+      hygieneProgress,
+      checkedBreakfast,
+      checkedLunch,
+      checkedDinner,
+      // ... any other data you want to save
+    };
+  
+    // Save the data to Firestore
+    setDoc(docRef, dataToSave, { merge: true })
+      .then(() => console.log("Data saved successfully!"))
+      .catch(error => console.error("Error saving data:", error));
+  }
+
+  useEffect(() => {
+    // This function will be called when the component is unmounted
+    return () => {
+      saveProgressToFirebase(); // Save progress when navigating away
+    };
+  }, []);
+
+  function getData() {
+    const docRef = doc(db, "App Storage", email);
+    getDoc(docRef).then(docSnap => {
+      if (docSnap.exists()) {
+        console.log("Document data:", docSnap.data());
+        // Here, you can set the state or handle the fetched data as needed
+      } else {
+        console.log("No such document!");
+      }
+    }).catch(error => {
+      console.error("Error getting document:", error);
+    });
+  }
 
   const [imageKey, setImageKey] = useState('sad');
   const [emotionText, setEmotionText] = useState("");
@@ -231,7 +287,7 @@ function HomeScreen(){
       const lastResetTimestamp = storedTimestamp ? JSON.parse(storedTimestamp) : 0;
   
       // Check if a day has passed since the last reset
-      if (currentTime - lastResetTimestamp >= 30000) { // 86400000 milliseconds = 24 hours, 60000 = 1 minute
+      if (currentTime - lastResetTimestamp >= 86400000) { // 86400000 milliseconds = 24 hours, 60000 = 1 minute
         await resetProgressBars();
         await AsyncStorage.setItem('lastResetTimestamp', JSON.stringify(currentTime));
       }
@@ -240,7 +296,7 @@ function HomeScreen(){
     // Check every 24 hours
     const interval = setInterval(() => {
       checkReset();
-    }, 30000); // 86400000 milliseconds = 24 hours, 60000 = 1 minute
+    }, 86400000); // 86400000 milliseconds = 24 hours, 60000 = 1 minute
   
     // Run checkReset immediately on component mount
     checkReset();
@@ -323,8 +379,8 @@ function HomeScreen(){
           <Text style={styles.buttonText}>Add</Text>
         </TouchableOpacity>
       </View>
-      <Button title="Save Data" onPress={() => saveData(0)} color='red'/>
-      <Button title="Get Data" onPress={() => getData()} color='blue'/>
+      <Button title="Save Data" onPress={saveProgressToFirebase} color='red'/>
+      <Button title="Get Data" onPress={getData} color='blue'/>
       </ScrollView>
     </SafeAreaView>
   );
@@ -392,7 +448,7 @@ function SocialScreen() {
   return (
     <View>
       <Text>Social!</Text>
-      <Text>{populateMoodBoard}</Text>
+      <Text>{populateMoodBoard()}</Text>
     </View>
   );
 }
@@ -406,57 +462,98 @@ function StatusScreen() {
   const screenWidth = Dimensions.get('window').width;
   const chartWidth = screenWidth * 0.6;
 
-  const mealData = {
-    labels: ["Day 1", "Day 2", "Day 3"],
+  // State variables hold the completion data
+  const [mealCompletion, setMealCompletion] = useState([0, 0, 0]);
+  const [waterCompletion, setWaterCompletion] = useState([0]);
+  const [sleepCompletion, setSleepCompletion] = useState([0]);
+  const [hygieneCompletion, setHygieneCompletion] = useState([0]);
+  
+  useEffect(() => {
+    const userEmail = email;
+    const documentReference = doc(db, "App Storage", userEmail);
+  
+    getDoc(documentReference).then(documentSnapshot => {
+      if (documentSnapshot.exists()) {
+        const data = documentSnapshot.data();
+  
+        // Compute and set the meal completion percentages
+        setMealCompletion([
+          data.checkedBreakfast ? 100 : 0,
+          data.checkedLunch ? 100 : 0,
+          data.checkedDinner ? 100 : 0,
+        ]);
+  
+        // Compute and set the water completion percentage
+        setWaterCompletion([data.waterProgress * 100]);
+  
+        // Compute and set the sleep completion percentage
+        setSleepCompletion([data.sleepProgress * 100]);
+  
+        // Compute and set the hygiene completion percentage
+        setHygieneCompletion([data.hygieneProgress * 100]);
+
+        console.log(data)
+
+        console.log("getDoc setWaterCompletion:" + data.waterProgress + ", setMealCompletion: " + setMealCompletion + ", setSleepCompletion: " + data.sleepProgress + ", setHygieneCompletion: " + data.hygieneProgress)
+  
+      } else {
+        console.log("No document exists for the specified user email:", userEmail);
+      }
+    }).catch(error => {
+      console.error("Error fetching data for userEmail:", userEmail, error);
+    });
+  }, [email, db]);
+
+  // Define the chart data using the state directly
+  const mealChartData = {
+    labels: ["Day One", "Day Two", "Day Three"],
     datasets: [{
-      data: [
-        ((checkedBreakfast ? 100 : 0) + (checkedLunch ? 100 : 0) + (checkedDinner ? 100 : 0)) / 3,
-        // The above line is repeated for other days, replace with actual data
-      ]
+      data: mealCompletion
     }]
   };
 
-  const waterData = {
-    labels: ["Day 1", "Day 2", "Day 3"],
+  // Continue using the state variables directly for the other charts
+  const waterChartData = {
+    labels: ["Day One", "Day Two", "Day Three"],
     datasets: [{
-      data: [
-        (waterProgress / 15) * 100,
-        // Repeat for other days, replace with actual data
-      ]
+      data: waterCompletion,
+      barColors: ["transparent", "transparent"]
     }]
   };
 
-  const sleepData = {
-    labels: ["Day 1", "Day 2", "Day 3"],
+  const sleepChartData = {
+    labels: ["Day One", "Day Two", "Day Three"],
     datasets: [{
-      data: [
-        (sleepProgress / 7) * 100,
-        // Repeat for other days, replace with actual data
-      ]
+      data: sleepCompletion
     }]
   };
 
-  const hygieneData = {
-    labels: ["Day 1", "Day 2", "Day 3"],
+  const hygieneChartData = {
+    labels: ["Day One", "Day Two", "Day Three"],
     datasets: [{
-      data: [
-        (hygieneProgress / 7) * 100,
-        // Repeat for other days, replace with actual data
-      ]
+      data: hygieneCompletion
     }]
   };
-
+  
+  // Configure chart settings
   const chartConfig = {
     backgroundColor: 'blue',
     backgroundGradientFrom: '#fb8c00',
     backgroundGradientTo: '#ffa726',
-    decimalPlaces: 2,
-    formatYLabel: formatYAxisLabel,
+    decimalPlaces: 0,
     color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
     style: {
       borderRadius: 16
-    }
+    },
+    // Add any other configuration you need for static y-axis labels here
   };
+
+  console.log("Render StatusScreen with state:", {
+    mealCompletion,
+    waterCompletion,
+    sleepCompletion,
+    hygieneCompletion,
+  });
 
   return (
     <ScrollView>
@@ -464,7 +561,7 @@ function StatusScreen() {
         <View style={styles.chartContainer}>
           <Text>Meal Completion</Text>
           <BarChart
-            data={mealData}
+            data={mealChartData}
             width={chartWidth}
             height={220}
             yAxisLabel="%"
@@ -475,33 +572,38 @@ function StatusScreen() {
         <View style={styles.chartContainer}>
           <Text>Water Consumption</Text>
           <BarChart
-            data={waterData}
+            data={waterChartData}
             width={chartWidth}
             height={220}
             yAxisLabel="%"
             chartConfig={chartConfig}
+            fromZero={true}
+            // yAxisInterval={1} // Adjust this based on how many labels you want to show
+            // yAxisRange={[0, 100]} // Optional: Define the range explicitly if needed
           />
         </View>
 
         <View style={styles.chartContainer}>
           <Text>Sleep Quality</Text>
           <BarChart
-            data={sleepData}
+            data={sleepChartData}
             width={chartWidth}
             height={220}
             yAxisLabel="%"
             chartConfig={chartConfig}
+            fromZero={true}
           />
         </View>
 
         <View style={styles.chartContainer}>
           <Text>Hygiene Level</Text>
           <BarChart
-            data={hygieneData}
+            data={hygieneChartData}
             width={chartWidth}
             height={220}
             yAxisLabel="%"
             chartConfig={chartConfig}
+            fromZero={true}
           />
         </View>
       </View>
@@ -553,7 +655,7 @@ function SignInScreen(){
   // const [email, setEmail] = useState(''); // Provide default email for testing
   // const [password, setPassword] = useState(''); // Provide default passwored for testing
   return(
-    <View style={styles.container}>
+    <View style={styles.fullScreenContainer}>
       <SignInOutPScreen 
         loginProps={loginProps} 
         auth={auth}/>
@@ -612,6 +714,12 @@ const styles = StyleSheet.create({
 
     // Add space between inlineContainer views
     paddingBottom: 10, // Space at the bottom of each container
+  },
+    fullScreenContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'stretch', // This will stretch the child components to fill the width
+    padding: 20, // Adjust as needed
   },
     inlineContainer: {
     flexDirection: 'row', // Aligns children horizontally
