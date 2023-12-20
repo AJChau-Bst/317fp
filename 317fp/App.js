@@ -1,15 +1,10 @@
 /*
 AJ's To Do List:
-- Why is Friends so Hard. 
-- Append Friend List. 
-- Create a second collection of all messages and their emails
-- This is the social display collection. 
-- Create a get function from firebase that sets all useStates appropriately. 
+- Map
 - Polish Sign In and Outt Screen, Polish Main screen
 https://firebase.google.com/docs/database/web/lists-of-data#append_to_a_list_of_data
 
 */
-
 import { NavigationContainer, Navigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
@@ -37,10 +32,7 @@ import { // access to authentication features:
          signOut
 } from "firebase/auth";
 import {getFirestore} from "firebase/firestore";
-import { // for Firestore access (to store messages)
-  collection, getDoc, doc, addDoc, setDoc,
-  query, where, getDocs
-} from "firebase/firestore";
+import { collection, addDoc, getDoc, updateDoc, arrayUnion, setDoc, doc, setData } from "firebase/firestore"; 
 
 
 export default function App() {
@@ -73,12 +65,13 @@ const [isComposingMessage, setIsComposingMessage] = React.useState(false);
 
 const healthProps = { checkedBreakfast, setCheckedBreakfast, checkedLunch, setCheckedLunch, checkedDinner, setCheckedDinner, waterProgress, setWaterProgress, hygieneProgress, setHygieneProgress, sleepProgress, setSleepProgress, petName, setPetName};
 const loginProps = {loggedInUser, setLoggedInUser, logOut, email, setEmail, password, setPassword, friend, addFriend}
-
-const allProps = {loginProps, healthProps}
+const socialProps = {email, setEmail, friend, addFriend, statusMessage}
+const allProps = {loginProps, healthProps, socialProps}
 
 const date = new Date();
 const timestamp = date.getTime(); // millsecond timestamp
 const timestampString = timestamp.toString();
+
 
 function logOut() {
     console.log('logOut'); 
@@ -87,7 +80,7 @@ function logOut() {
     console.log(`logOut: setLoggedInUser(null)`);
     setLoggedInUser(null);
     console.log('logOut: signOut(auth)');
-    signOut(auth); // Will eventually set auth.currentUser to null     
+    signOut(auth); // Will eventually set auth.currentUser to null    
   }
 
 const images = {
@@ -203,7 +196,7 @@ function HomeScreen(){
       // ... any other data you want to save
     };
   
-    // Save the data to Firestore
+    //Save the data to Firestore
     setDoc(docRef, dataToSave, { merge: true })
       .then(() => console.log("Data saved successfully!"))
       .catch(error => console.error("Error saving data:", error));
@@ -386,42 +379,6 @@ function HomeScreen(){
   );
 }
 
-function saveData(saveTrigger){
-    try {
-      setDoc(doc(db, "App Storage", email), 
-      {
-        "timestamp": timestampString,
-        "whoSaved": saveTrigger,
-        "petName": petName,
-        'friends': friend,
-        "statusMessage": statusMessage,
-        "checkedBreakfast": checkedBreakfast, 
-        "checkedLunch":checkedLunch, 
-        "checkedDinner": checkedDinner, 
-        "waterProgress":waterProgress, 
-        "hygieneProgress":hygieneProgress,  
-        "sleepProgress":sleepProgress
-      })
-      console.log("String uploaded successfully!");
-    } catch (error) {
-      console.error("Error uploading string:", error);
-    }
-}
-
-// function getData(){
-//   try{
-//     const docSnap = getDocs(doc(db, "App Storage", email));
-//     console.log(docSnap.data)
-//   } catch (error){
-//     console.error("Error Getting String", error)
-//   }
-// }
-
-// const postListRef = ref(db, 'App Storage', email, "friends");
-// const newPostRef = push(friend);
-// set(newPostRef, {
-//     // ...
-// });
 
 function SocialScreen() {
   // ideally, this function grabs your friend's messages from Firestore,
@@ -612,31 +569,42 @@ function StatusScreen() {
 }
 
 function SettingsScreen() {
-  // const uploadString = async (stringToUpload) => {
-  //   try {
-  
-  //     setDoc(doc(db, "newFriend"), 
-  //     {
-  //       'friend': friend,
-  //       "I'm reeally Trying here": "filler test whoop" 
-  //     })
-  //     console.log("String uploaded successfully!");
-  //   } catch (error) {
-  //     console.error("Error uploading string:", error);
-  //   }
-  // }
+  const navigation = useNavigation();
   return (
 <View style={styles.container}>
     <Text> Enter Friend Username To Add: </Text>
     <TextInput style={styles.input}
-      onSubmitEditing={(value) => addFriend(value.nativeEvent.text)} />
-    <Button title="Submit" onPress={() => addNewFriend} color='green'/>
+    onSubmitEditing={(value) => addFriend(value.nativeEvent.text)}/>
+    <Button title="Submit" onPress={() => addNewFriend()} color='green'/>
     <Button title = "Log Out"
-      onPress={() => loginProps.logOut()}>
+      onPress={() => {loginProps.logOut(); navigation.navigate('Log In') }}>
       </Button>
     </View>
   );
 }
+
+function addNewFriend(){
+    try {
+      console.log("Wild. ")
+      const friendPath = doc(db, "friends", email);
+      setDoc(friendPath, {
+        currentFriends:{
+          friends: arrayUnion(friend)
+        }
+      }, {merge: true});
+    } catch (error) {
+      console.error("Error uploading string:", error);
+    }
+}
+
+function updateMessage(){
+  const friendPath = doc(db, "friends", email);
+  setDoc(friendPath, {
+      message: statusMessage
+      //Add Any Other Social Screen Option here
+  })
+}
+
 
 function UserScreen(){
   return(
@@ -691,7 +659,8 @@ function MyStack() {
               title="Settings"
               onPress={() => navigation.navigate('Settings')}
             />
-          ),
+          ), 
+          headerLeft: ()=> null,
         }} />
       <stackN.Screen name="Settings" component={SettingsScreen} />
     </stackN.Navigator>

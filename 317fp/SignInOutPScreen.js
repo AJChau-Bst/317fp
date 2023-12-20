@@ -118,8 +118,7 @@ export default function SignInOutPScreen( {auth, loginProps} ) {
 
   return (
     <View style={styles.screen}>
-      <View style={loginProps.loggedInUser === null ? styles.signInOutPane : styles.hidden}>
-        <Text>SignInPane</Text>
+      <View style={loginProps.loggedInUser === null ? styles.textBoxWonky : styles.hidden}>
         <View style={styles.labeledInput}>
             <Text style={styles.inputLabel}>Email:</Text>
     <TextInput style={styles.input} label="Username"
@@ -167,29 +166,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-jsonContainer: {
-    flex: 1,
-    width: '98%',
-    borderWidth: 1,
-    borderStyle: 'dashed', // Lyn sez: doesn't seem to work 
-    borderColor: 'blue',
-},
-json: {
-    padding: 10, 
-    color: 'blue', 
-},
-  subComponentContainer: {
-    padding: 10, 
-    color: 'blue', 
-    borderWidth: 1,
-    borderStyle: 'dashed', // Lyn sez: doesn't seem to work 
-    borderColor: 'coral',
-    backgroundColor: 'pink',
-  },
   buttonHolder: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: 'center',
+    padding: 20
   },
   hidden: {
     display: 'none',
@@ -197,29 +178,15 @@ json: {
   visible: {
     display: 'flex',
   },
-loginLogoutPane: {
-    flex: 3, 
-    alignItems: 'center',
-    justifyContent: 'center',
-}, 
 labeledInput: {
     width: "100%",
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 5
 }, 
 inputLabel: {
     fontSize: 20,
 }, 
-textInput: {
-    width: "80%",
-    fontSize: 20,
-    borderRadius: 5,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderColor: "rgba(0, 0, 0, 0.2)",
-    borderWidth: 1,
-    marginBottom: 8,
-},
 buttonHolder: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -236,23 +203,10 @@ button: {
     backgroundColor: 'steelblue',
     margin: 3,
 },
-buttonDisabled: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 10,
-    elevation: 3,
-    backgroundColor: 'powderblue',
-    margin: 3,
-},
 buttonText: {
     fontSize: 15,
     fontWeight: 'bold',
     color: 'white',
-},
-smallButtonText: {
-  fontSize: 13,
-  fontWeight: 'bold',
-  color: 'white',
 },
 errorBox: {
     width: '80%',
@@ -264,78 +218,6 @@ errorMessage: {
     color: 'red',
     padding: 10, 
 },
-chatPane: {
-  flex: 1,
-  width:'100%',
-  alignItems: "center",
-  backgroundColor: 'white',
-},
-header: {
-  marginTop: 10,
-  fontSize: 25,
-  fontWeight: 'bold'
-},
-pickerStyles:{
-  width:'70%',
-  backgroundColor:'plum',
-  color:'black'
-},
-messageList: {
-  width:'90%',
-  marginTop: 5,
-},
-messageItem: {
-  marginTop: 5,
-  marginBottom: 5,
-  backgroundColor:'bisque',
-  color:'black',
-  borderWidth: 1,
-  borderColor: 'blue',
-},
-messageDateTime: {
-  paddingLeft: 5,
-  color:'gray',
-},
-messageAuthor: {
-  paddingLeft: 5,
-  color:'blue',
-},
-messageContent: {
-  padding: 5,
-  color:'black',
-},
-composePane: {
-  width:'100%',
-  borderWidth: 1,
-  borderColor: 'blue',
-},
-textInputArea: {
-  fontSize: 14, 
-  padding: 5,
-},
-composeButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    elevation: 3,
-    backgroundColor: 'salmon',
-    margin: 5,
-    marginLeft: 10,
-},
-composeButtonText: {
-    fontSize: 16,
-    lineHeight: 21,
-    fontWeight: 'bold',
-    letterSpacing: 0.25,
-    color: 'white',
-},
-signInOutPane: {
-  flex: 3, 
-  alignItems: 'center',
-  justifyContent: 'center',
-},
 container: {
   flex: 1,
   justifyContent: 'center',
@@ -346,10 +228,17 @@ container: {
 },
 input: {
   borderColor: "gray",
-  width: "50%",
+  width: "100%",
   margin: "auto",
   borderWidth: 1,
   borderRadius: 10,
   padding: 10,
 },
-});
+textBoxWonky: {
+  alignItems: 'center',
+  justifyContent: 'right',
+  width: '65%',
+
+}
+},
+);
