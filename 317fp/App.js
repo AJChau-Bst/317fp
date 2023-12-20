@@ -394,29 +394,71 @@ function HomeScreen(){
 function SocialScreen() {
   // ideally, this function grabs your friend's messages from Firestore,
   // and will display them-- we'll need their pet's name as the display name
-  function populateMoodBoard(){
-    //a function to format the friend messages that are displayed
-    // want to grab from the friend array --> then take the pet name
-    // and grab their status message
-    // i think it can return a JSX component 
-    return 0;
-  }
+  const [isComposingMessage, setIsComposingMessage] = useState(false);
   function updateStatusMessage() {
     return 0;
   }
     /**
-   * Open an area for message composition. Currently uses conditional formatting
-   * (controlled by isComposingMessage state variabel) to do this within ChatViewScreen,
-   * but really should be done by a Modal or separate screen. 
+   * Get current messages for the given channel from Firebase's Firestore
+   * given an array of friends --> map through them and grab messages for each
+   * I believe all our messages are stored in one place, so we just find the
+   * author who matches
    */ 
+    async function firebaseGetFriendMessages(friendsArray) {
+      const q = query(collection(db, 'messages'), where('author', '==', friendsArray[0]));
+      const querySnapshot = await getDocs(q);
+      let messages = []; 
+      querySnapshot.forEach(doc => {
+          messages.push(docToMessage(doc));
+      });
+      setSelectedMessages( messages );
+      return messages;
+    }
+  
+    /**
+     * Convert a Firebase message doc to a local message object
+     * by adding a human-readable date (which isn't stored in Firestore).
+     */ 
+    function docToMessage(msgDoc) {
+      // msgDoc has the form {id: timestampstring, 
+      //                   data: {timestamp: ..., // a number, not a string 
+      //                          author: ..., // email address
+      //                          channel: ..., // name of channel 
+      //                          content: ..., // string for contents of message. 
+      //                          imageUri: ... // optional field containing downloadURL for
+      //                                        // image file stored in Firebase's storage
+      //                          }
+      // Need to add missing date field to data portion, reconstructed from timestamp
+      // console.log('docToMessage');
+      const data = msgDoc.data();
+      // console.log(msgDoc.id, " => ", data);
+      return {...data, date: new Date(data.timestamp)}
+    }
+  
+    /**
+     * Open an area for message composition. Currently uses conditional formatting
+     * (controlled by isComposingMessage state variabel) to do this within ChatViewScreen,
+     * but really should be done by a Modal or separate screen. 
+     */ 
     function composeMessage() {
       setIsComposingMessage(true);
     }
   
+    /**
+     * Cancel the current message composition. 
+     * This is the action for the Cancel button in the message composition pane.
+     */ 
+    function cancelMessage() {
+      setIsComposingMessage(false);
+      //setPostImageUri(null); // New for images
+    }
+    // some sample things for testing
+    let testFriendArray = ["finz@gmail.com", "aardvark@gmail.com"];
+  
   return (
     <View>
       <Text>Social!</Text>
-      <Text>{populateMoodBoard()}</Text>
+      <Text>{firebaseGetFriendMessages(testFriendArray)}</Text>
     </View>
   );
 }
