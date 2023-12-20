@@ -1,23 +1,13 @@
-/*
-AJ's To Do List:
-- Map
-- Polish Sign In and Outt Screen, Polish Main screen
-https://firebase.google.com/docs/database/web/lists-of-data#append_to_a_list_of_data
-
-*/
 import { NavigationContainer, Navigation } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { StatusBar } from 'expo-status-bar';
 import { createStackNavigator } from '@react-navigation/stack';
 import * as React from 'react';
-import { useState, useEffect, createContext, useContext } from 'react';
-import { Button, Text, View, TextInput, StyleSheet, Image, Slider, TouchableOpacity, Scroll, SafeAreaView } from 'react-native';
+import { useState, useEffect} from 'react';
+import { Button, Text, View, TextInput, StyleSheet, Image, TouchableOpacity, SafeAreaView } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native'
 import * as Progress from 'react-native-progress';
 import Checkbox from 'expo-checkbox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Location from 'expo-location';
 import { BarChart } from 'react-native-chart-kit';
 import { Dimensions, ScrollView } from 'react-native';
 import MapView, { Marker, Polyline } from "react-native-maps";
@@ -26,29 +16,25 @@ import StateContext from './StateContext.js';
 import { emailOf } from './utils.js';
 import { firebaseConfig } from './firebaseConfig.js'
 import { initializeApp } from 'firebase/app';
-import { // access to authentication features:
-         getAuth, 
-         // for logging out:
-         signOut
-} from "firebase/auth";
+import {getAuth, signOut} from "firebase/auth";
 import {getFirestore} from "firebase/firestore";
-import { collection, addDoc, getDoc, updateDoc, arrayUnion, setDoc, doc, setData } from "firebase/firestore"; 
-
+import {getDoc, arrayUnion, setDoc, doc} from "firebase/firestore"; 
+import * as Location from 'expo-location';
 
 export default function App() {
 
   // Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
 
-// New for images:
-const db = getFirestore(firebaseApp); // for storaging messages in Firestore
-
+//Create Authentication Use States
 const [loggedInUser, setLoggedInUser] = React.useState(null);
-const [email, setEmail] = useState(""); // Provide default email for testing
-const [password, setPassword] = useState(""); // Provide default passwored for testing
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
 const [friend, addFriend] = useState([]);
 
+//Create Health Use States
 const [checkedBreakfast, setCheckedBreakfast] = React.useState(false);
 const [checkedLunch, setCheckedLunch] = React.useState(false);
 const [checkedDinner, setCheckedDinner] = React.useState(false);
@@ -56,23 +42,22 @@ const [waterProgress, setWaterProgress] = React.useState(0);
 const [hygieneProgress, setHygieneProgress] = React.useState(0);
 const [sleepProgress, setSleepProgress] = React.useState(0);
 const [petName, setPetName] = React.useState(0);
+
+//Create Social Use States
 const [statusMessage, setStatusMessage] = React.useState("")
 const [friendMessages, setFriendMessages] = React.useState([]); //
-const [liked, setLiked] = React.useState("")//Create a Dictionary Here. 
+const [liked, setLiked] = React.useState("")
 const [emoji, setemoji] = React.useState("");
 const [isComposingMessage, setIsComposingMessage] = React.useState(false);
 
-
+//Create Props for Contexts
 const healthProps = { checkedBreakfast, setCheckedBreakfast, checkedLunch, setCheckedLunch, checkedDinner, setCheckedDinner, waterProgress, setWaterProgress, hygieneProgress, setHygieneProgress, sleepProgress, setSleepProgress, petName, setPetName};
 const loginProps = {loggedInUser, setLoggedInUser, logOut, email, setEmail, password, setPassword, friend, addFriend}
 const socialProps = {email, setEmail, friend, addFriend, statusMessage}
 const allProps = {loginProps, healthProps, socialProps}
 
-const date = new Date();
-const timestamp = date.getTime(); // millsecond timestamp
-const timestampString = timestamp.toString();
 
-
+//Logs Out of Firebase
 function logOut() {
     console.log('logOut'); 
     console.log(`logOut: emailOf(auth.currentUser)=${emailOf(auth.currentUser)}`);
@@ -80,65 +65,99 @@ function logOut() {
     console.log(`logOut: setLoggedInUser(null)`);
     setLoggedInUser(null);
     console.log('logOut: signOut(auth)');
-    signOut(auth); // Will eventually set auth.currentUser to null    
+    signOut(auth);  
   }
 
+// Image States
 const images = {
   happy: require('./happycat.png'),
   sad: require('./sadcat.png'),
   neutral: require('./neutralcat.png')
-  // ... other images
 }
 
 function MapScreen() {
-  // let subscription = null;
-  // const [location, setLocation] = useState(null);
-  // const [errorMsg, setErrorMsg] = useState(null);
+  let subscription = null;
+  const [showTextbox, setShowTextbox] = useState(false);
   const [showStartRec, setStartRec] = useState(true);
   const [showEndRec, setEndRec] = useState(false);
-  // const [myCoord, setMyCoord] = useState(null);
-  // const [coords, setCoords] = useState([
-  //   {
-  //     "latitude": 42.2938,
-  //     "longitude": -71.30128
-  //   },
-  //   {
-  //     "latitude": 42.29276,
-  //     "longitude": -71.30063
-  //   },
-  //   {
-  //     "latitude": 42.29161,
-  //     "longitude": -71.30172
-  //   }]);
-  //   const [permissionText, setPermissionText] 
-  //   = useState('Location permission not requested yet');
+  const [showAddMarker, setAddMarker] = useState(false);
+  const [permissionText, setPermissionText] 
+  = useState('Location permission not requested yet');
 
-  // useEffect(() => {
-  //   (async () => {
-  //     let { status } = await Location.requestForegroundPermissionsAsync();
-  //     if (status !== 'granted') {
-  //       setErrorMsg('Permission to access location was denied');
-  //       return;
-  //     }
+  const [showMap, setShowMap] = useState(false);
+  const [myCoord, setMyCoord] = useState(null);
+  const [coords, setCoords] = useState([])
 
-  //     let currentLocation = await Location.getCurrentPositionAsync({});
-  //     setLocation(currentLocation);
-  //   })();
-  // }, []);
+  async function startTracking() {
+    setStartRec(false);
+    setEndRec(true);
+    setAddMarker(true);
+
+    let perm = await Location.requestForegroundPermissionsAsync();
+    setPermissionText(perm);
+    if (perm.status !== 'granted') {
+      console.log('Permission to access location was denied');
+      return;
+    }
+
+    // Shut down a foreground service subscription that's already running
+    if (subscription !== null) {
+      console.log('Stopping active location subscription service.')
+      subscription.remove();
+    }
+
+    //Reset myCoord and coords state variables for new tracking session 
+    setMyCoord(null)
+    setCoords([]);
+   
+    console.log('Starting location subscription service.')
+    subscription = await Location.watchPositionAsync(                   
+      {
+        accuracy: Location.Accuracy.BestForNavigation,
+        distanceInterval: 1
+      },                                                                        
+      newLocation => {
+        const newCoord = {
+          latitude: newLocation.coords.latitude, 
+          longitude: newLocation.coords.longitude
+        }
+        console.log('Moved to new coord.', newCoord);
+        console.log('myCoord =', myCoord, '; coords =', coords);
+        setMyCoord(prevMyCoord => {
+          console.log('prevMyCoord =', prevMyCoord); 
+          return newCoord;
+        });
+        setCoords(prevCoords => {
+          console.log('prevCoords =', prevCoords); 
+          return [...prevCoords, newCoord]; 
+        });
+        })
+      }
+  // Stop foreground location tracking
+  function stopTracking() {
+    setEndRec(false);
+    if (subscription !== null) {
+      console.log('Stopping active location subscription service.')
+      subscription.remove();
+    }
+    setShowStartRec(true)
+  };
   return (
 <SafeAreaView style={styles.container}>
-    <MapView style={styles.map} 
-    initialRegion={{
-    latitude: 41,
-    longitude: -72,
-    latitudeDelta: 0.02,
-    longitudeDelta: 0.02,
-    }}
-    showsCompass={true} 
-    showsUserLocation={true} 
-    rotateEnabled={true}
-  >
-  </MapView>
+{ (myCoord === null) ?
+        <Text>Waiting for location to display map ...</Text> :
+        <MapView style={styles.map} 
+        initialRegion={{
+        latitude: myCoord.latitude,
+        longitude: myCoord.longitude,
+        latitudeDelta: 0.02,
+        longitudeDelta: 0.02,
+        }}
+        showsCompass={true} 
+        showsUserLocation={true} 
+        rotateEnabled={true}
+      >
+  </MapView>}
   <View style={styles.controls}>
         {showStartRec && <Button title="Start Tracking" onPress={startTracking} color='green'/>}
         {showEndRec && <Button title="Stop Tracking" onPress={stopTracking} color='red'/>}
@@ -147,14 +166,7 @@ function MapScreen() {
   );
 }
 
-function startTracking(){
-  return 0;
-}
-
-function stopTracking(){
-  return 0;
-}
-
+// The Main Pet Screen
 function HomeScreen(){
   const toggleCheckbox = () => setChecked(!checked);
   const handleAddWater = () => {
@@ -193,7 +205,6 @@ function HomeScreen(){
       checkedBreakfast,
       checkedLunch,
       checkedDinner,
-      // ... any other data you want to save
     };
   
     //Save the data to Firestore
@@ -583,20 +594,22 @@ function SettingsScreen() {
   );
 }
 
+//Updated Friends List
 function addNewFriend(){
     try {
-      console.log("Wild. ")
       const friendPath = doc(db, "friends", email);
       setDoc(friendPath, {
         currentFriends:{
           friends: arrayUnion(friend)
         }
       }, {merge: true});
+      console.log("Updated Friends List")
     } catch (error) {
       console.error("Error uploading string:", error);
     }
 }
 
+//Update Social Use States
 function updateMessage(){
   const friendPath = doc(db, "friends", email);
   setDoc(friendPath, {
@@ -617,11 +630,10 @@ function SignInScreen(){
   const defaultEmail = "chaujannette@gmail.com";
   const defaultPassword = 'hellooo'
 
+  //Default
   setEmail("chaujannette@gmail.com")
   setPassword('hellooo')
-  // Shared state for authentication 
-  // const [email, setEmail] = useState(''); // Provide default email for testing
-  // const [password, setPassword] = useState(''); // Provide default passwored for testing
+  
   return(
     <View style={styles.fullScreenContainer}>
       <SignInOutPScreen 
