@@ -416,7 +416,6 @@ function SocialScreen() {
   return (
     <View>
       <Text>Social!</Text>
-      <Text>{populateMoodBoard()}</Text>
     </View>
   );
 }
