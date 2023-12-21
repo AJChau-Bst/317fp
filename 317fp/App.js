@@ -30,8 +30,8 @@ const db = getFirestore(firebaseApp);
 
 //Create Authentication Use States
 const [loggedInUser, setLoggedInUser] = React.useState(null);
-const [email, setEmail] = useState("");
-const [password, setPassword] = useState("");
+const [email, setEmail] = useState(""); //input email
+const [password, setPassword] = useState(""); //input password
 const [friend, addFriend] = useState([]);
 
 //Create Health Use States
@@ -631,8 +631,8 @@ function SignInScreen(){
   const defaultPassword = 'hellooo'
 
   //Default
-  setEmail("chaujannette@gmail.com")
-  setPassword('hellooo')
+  // setEmail("chaujannette@gmail.com")
+  // setPassword('hellooo')
   
   return(
     <View style={styles.fullScreenContainer}>
