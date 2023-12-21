@@ -398,19 +398,19 @@ const [friend, addFriend] = useState([]);
   }
 
 
-  function SocialScreen() {
-    // ideally, this function grabs your friend's messages from Firestore,
-    // and will display them-- we'll need their pet's name as the display name
-    function populateMoodBoard() {
-      //a function to format the friend messages that are displayed
-      // want to grab from the friend array --> then take the pet name
-      // and grab their status message
-      // i think it can return a JSX component 
-      return 0;
-    }
-    function updateStatusMessage() {
-      return 0;
-    }
+function SocialScreen() {
+  // ideally, this function grabs your friend's messages from Firestore,
+  // and will display them-- we'll need their pet's name as the display name
+  function populateMoodBoard(){
+    //a function to format the friend messages that are displayed
+    // want to grab from the friend array --> then take the pet name
+    // and grab their status message
+    // i think it can return a JSX component 
+    return 0;
+  }
+  function updateStatusMessage() {
+    return 0;
+  }
     /**
    * Open an area for message composition. Currently uses conditional formatting
    * (controlled by isComposingMessage state variabel) to do this within ChatViewScreen,
