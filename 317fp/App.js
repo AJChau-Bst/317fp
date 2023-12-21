@@ -420,6 +420,13 @@ function SocialScreen() {
     </View>
   );
 }
+function FriendsScreen(){
+  return (
+    <View>
+      <Text>FriendsScreen!</Text>
+    </View>
+  )
+}
 
 
 const formatYAxisLabel = (value) => {
@@ -650,6 +657,7 @@ function MyTabs() {
     <Tab.Navigator>
       <Tab.Screen name="Your Pet" component= {HomeScreen } />
       <Tab.Screen name="Social" component={SocialScreen} />
+      <Tab.Screen name="Friends" component={FriendsScreen} />
       <Tab.Screen name="Status" component={StatusScreen} />
       <Tab.Screen name="Map" component={MapScreen} />
     </Tab.Navigator>
