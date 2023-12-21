@@ -32,14 +32,6 @@ export default function SignInOutPScreen( {auth, loginProps} ) {
         signOut(auth); // sign out auth's current user (who is not loggedInUser, 
                        // or else we wouldn't be here
       }
-      if (!loginProps.email.includes('@')) {
-        setErrorMsg('Not a valid email address');
-        return;
-      }
-      if (loginProps.password.length < 6) {
-        setErrorMsg('Password too short');
-        return;
-      }
       // Invoke Firebase authentication API for Email/Password sign up 
       createUserWithEmailAndPassword(auth, loginProps.email, loginProps.password)
         .then((userCredential) => {
@@ -122,13 +114,15 @@ export default function SignInOutPScreen( {auth, loginProps} ) {
         <View style={styles.labeledInput}>
             <Text style={styles.inputLabel}>Email:</Text>
     <TextInput style={styles.input} label="Username"
-      onSubmitEditing={(value) => loginProps.setEmail(value)} />
+      value = {loginProps.email}
+      onChangeText={(value) => {console.log("on Change Email Txt", value); loginProps.setEmail(value) }} />
     <Text style={styles.inputLabel}>Password:</Text>
     <TextInput
       style={styles.input}
       label="Password"
-      secureTextEntry
-      onSubmitEditing={(value) => loginProps.setPassword(value)}
+      // secureTextEntry
+      value = {loginProps.password}
+      onChangeText={(value) => loginProps.setPassword(value)}
     />
           </View>
           <View style={styles.labeledInput}>

@@ -28,11 +28,11 @@ export default function App() {
   const auth = getAuth(firebaseApp);
   const db = getFirestore(firebaseApp);
 
-  //Create Authentication Use States
-  const [loggedInUser, setLoggedInUser] = React.useState(null);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [friend, addFriend] = useState([]);
+//Create Authentication Use States
+const [loggedInUser, setLoggedInUser] = React.useState(null);
+const [email, setEmail] = useState(""); //input email
+const [password, setPassword] = useState(""); //input password
+const [friend, addFriend] = useState([]);
 
   //Create Health Use States
   const [checkedBreakfast, setCheckedBreakfast] = React.useState(false);
@@ -680,18 +680,18 @@ export default function App() {
     const defaultEmail = "chaujannette@gmail.com";
     const defaultPassword = 'hellooo'
 
-    //Default
-    setEmail("chaujannette@gmail.com")
-    setPassword('hellooo')
-
-    return (
-      <View style={styles.fullScreenContainer}>
-        <SignInOutPScreen
-          loginProps={loginProps}
-          auth={auth} />
-      </View>
-    )
-  }
+  //Default
+  // setEmail("chaujannette@gmail.com")
+  // setPassword('hellooo')
+  
+  return(
+    <View style={styles.fullScreenContainer}>
+      <SignInOutPScreen 
+        loginProps={loginProps} 
+        auth={auth}/>
+    </View>
+  )
+}
 
   const Tab = createBottomTabNavigator();
 
