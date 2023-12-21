@@ -436,9 +436,10 @@ export default function App() {
         });
     }
 
-    function fetchFriends() {
+    async function fetchFriends() {
       const docRef = doc(db, "FriendsList", email);
-      const docSnap = getDoc(docRef);
+      const docSnap = await getDoc(docRef);
+
       setFriendsList(prevFriendList => JSON.parse(docSnap.friendsArray));
     //  
       /* if (docSnap.exists()) {
