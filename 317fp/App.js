@@ -1,6 +1,6 @@
 import { NavigationContainer, Navigation } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import * as React from 'react';
+//import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { Button, Text, View, TextInput, StyleSheet, Image, TouchableOpacity, SafeAreaView } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -12,7 +12,6 @@ import { BarChart } from 'react-native-chart-kit';
 import { Dimensions, ScrollView } from 'react-native';
 import MapView, { Marker, Polyline } from "react-native-maps";
 import SignInOutPScreen from './SignInOutPScreen';
-import StateContext from './StateContext.js';
 import { emailOf } from './utils.js';
 import { firebaseConfig } from './firebaseConfig.js'
 import { initializeApp } from 'firebase/app';
@@ -20,6 +19,9 @@ import { getAuth, signOut } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getDoc, arrayUnion, setDoc, doc } from "firebase/firestore";
 import * as Location from 'expo-location';
+import StateContext from './components/StateContext.js';
+import FriendsScreen from "./components/FriendsScreen.js";
+import styles from "./components/styles.js";
 
 export default function App() {
 
@@ -29,32 +31,37 @@ export default function App() {
   const db = getFirestore(firebaseApp);
 
 //Create Authentication Use States
-const [loggedInUser, setLoggedInUser] = React.useState(null);
-const [email, setEmail] = useState(""); //input email
-const [password, setPassword] = useState(""); //input password
+const [loggedInUser, setLoggedInUser] = useState(null);
+//const [email, setEmail] = useState(""); //input email
+//const [password, setPassword] = useState(""); //input password
+const [email, setEmail] = useState("ma108@wellesley.edu"); //testing email
+const [password, setPassword] = useState("password"); //testing password
 const [friend, addFriend] = useState([]);
 
   //Create Health Use States
-  const [checkedBreakfast, setCheckedBreakfast] = React.useState(false);
-  const [checkedLunch, setCheckedLunch] = React.useState(false);
-  const [checkedDinner, setCheckedDinner] = React.useState(false);
-  const [waterProgress, setWaterProgress] = React.useState(0);
-  const [hygieneProgress, setHygieneProgress] = React.useState(0);
-  const [sleepProgress, setSleepProgress] = React.useState(0);
-  const [petName, setPetName] = React.useState(0);
+  const [checkedBreakfast, setCheckedBreakfast] = useState(false);
+  const [checkedLunch, setCheckedLunch] = useState(false);
+  const [checkedDinner, setCheckedDinner] = useState(false);
+  const [waterProgress, setWaterProgress] = useState(0);
+  const [hygieneProgress, setHygieneProgress] = useState(0);
+  const [sleepProgress, setSleepProgress] = useState(0);
+  const [petName, setPetName] = useState(0);
 
   //Create Social Use States
-  const [statusMessage, setStatusMessage] = React.useState("")
-  const [friendMessages, setFriendMessages] = React.useState([]); //
-  const [liked, setLiked] = React.useState("")
-  const [emoji, setemoji] = React.useState("");
-  const [isComposingMessage, setIsComposingMessage] = React.useState(false);
+  const [statusMessage, setStatusMessage] = useState("")
+  const [friendMessages, setFriendMessages] = useState([]); //
+  const [liked, setLiked] = useState("")
+  const [emoji, setemoji] = useState("");
+  const [isComposingMessage, setIsComposingMessage] = useState(false);
 
   //Create Props for Contexts
+  console.log("before props email is: ", email);
   const healthProps = { checkedBreakfast, setCheckedBreakfast, checkedLunch, setCheckedLunch, checkedDinner, setCheckedDinner, waterProgress, setWaterProgress, hygieneProgress, setHygieneProgress, sleepProgress, setSleepProgress, petName, setPetName };
   const loginProps = { loggedInUser, setLoggedInUser, logOut, email, setEmail, password, setPassword, friend, addFriend }
   const socialProps = { email, setEmail, friend, addFriend, statusMessage }
-  const allProps = { loginProps, healthProps, socialProps }
+  console.log("in app.js, social props is: ", socialProps);
+  const firebaseProps = {auth, db}
+  const allProps = { loginProps, healthProps, socialProps, firebaseProps }
 
 
   //Logs Out of Firebase
@@ -419,58 +426,6 @@ const [friend, addFriend] = useState([]);
       </View>
     );
   }
-  function FriendsScreen() {
-    const [friendInputText, setFriendInputText] = useState('');
-    const [isRequestingFriend, setIsRequestingFriend] = useState(false);
-    const [friendsList, setFriendsList] = useState([])
-
-    async function requestFriend(friendEmail) {
-      const now = new Date();
-      const curTimestamp = now.getTime()
-      await setDoc(doc(db, "FriendRequests", curTimestamp),
-        {
-          requestTo: friendEmail,
-          requestFrom: email,
-          timestamp: curTimestamp,
-
-        });
-    }
-
-    async function fetchFriends() {
-      const docRef = doc(db, "FriendsList", email);
-      const docSnap = await getDoc(docRef);
-
-      setFriendsList(prevFriendList => JSON.parse(docSnap.friendsArray));
-    //  
-      /* if (docSnap.exists()) {
-        console.log("Document data:", docSnap.friendsArray());
-        setFriendsList(prevFriendList => JSON.parse(docSnap.friendsArray));
-      } else {
-        // docSnap.data() will be undefined in this case
-        console.log("No such document!");
-      } */
-      //
-    }
-
-    //fetchFriends();
-
-    //we'll probably sort it into two different sections
-    // the top will give you the option to add a friend
-    return (
-      <View>
-        <Text>Friends Screen!</Text>
-        <TextInput
-          style={styles.friendInput}
-          onChangeText={setFriendInputText}
-          value={friendInputText}
-          placeholder="sample@email.com"
-      />
-        <Text>{JSON.stringify(friendsList)}</Text>
-
-      </View>
-    )
-
-  }
 
   const formatYAxisLabel = (value) => {
     return `${value * 100}`;
@@ -698,11 +653,11 @@ const [friend, addFriend] = useState([]);
   function MyTabs() {
     return (
       <Tab.Navigator>
-        <Tab.Screen name="Your Pet" component={HomeScreen} />
-        <Tab.Screen name="Social" component={SocialScreen} />
+        {/*<Tab.Screen name="Your Pet" component={HomeScreen} />
+        <Tab.Screen name="Social" component={SocialScreen} />*/}
         <Tab.Screen name="Friends" component={FriendsScreen} />
-        <Tab.Screen name="Status" component={StatusScreen} />
-        <Tab.Screen name="Map" component={MapScreen} />
+        {/*<Tab.Screen name="Status" component={StatusScreen} />
+        <Tab.Screen name="Map" component={MapScreen} />*/}
       </Tab.Navigator>
     );
   }
@@ -737,92 +692,3 @@ const [friend, addFriend] = useState([]);
     </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  containerHome: {
-    // alignItems: 'center',
-    padding: 2,
-    // justifyContent: 'space-between',
-
-    // Add space between inlineContainer views
-    paddingBottom: 10, // Space at the bottom of each container
-  },
-  fullScreenContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'stretch', // This will stretch the child components to fill the width
-    padding: 20, // Adjust as needed
-  },
-  inlineContainer: {
-    flexDirection: 'row', // Aligns children horizontally
-    alignItems: 'center', // Centers children vertically in the container
-    marginBottom: 20, // Add bottom margin to each inlineContainer
-    marginTop: 20
-
-  },
-  chartContainer: {
-    marginBottom: 20, // Space between charts
-  },
-  testButtonStyle: {
-    backgroundColor: 'red', // Example color for visibility
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 5,
-    marginTop: 20
-  },
-
-  buttonStyle: {
-    backgroundColor: '#DA63E9', // Example background color
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 5,
-    marginLeft: 10
-  },
-  buttonText: {
-    color: 'white', // Example text color
-    fontSize: 16,
-  },
-  input: {
-    borderColor: "gray",
-    width: "50%",
-    margin: "auto",
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 10,
-  },
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  petImage: {
-    justifyContent: 'center',
-    width: 300,
-    height: 300,
-    resizeMode: 'contain'
-
-  },
-  elementHome: {
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    margin: 10,
-  },
-  map: {
-    flex: 2,
-    width: '100%',
-    height: '100%',
-  },
-  controls: {
-    marginTop: 10,
-    padding: 10,
-    borderRadius: 10,
-    backgroundColor: 'cyan'
-  },
-  friendInput: {
-    height: 40,
-    margin: 12,
-    borderWidth: 1,
-    padding: 10,
-  },
-});
