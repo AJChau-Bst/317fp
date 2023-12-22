@@ -11,8 +11,9 @@ import { useNavigation } from '@react-navigation/native'
 export default function SignInOutPScreen( {auth, loginProps} ) {
   const navigation = useNavigation();
   const [errorMsg, setErrorMsg] = useState('');
-
+  var textFix = 0;
   useEffect(() => {
+
       console.log(`on enter: emailOf(auth.currentUser)=${emailOf(auth.currentUser)}`);
       console.log(`on enter: emailOf(loginProps.loggedInUser)=${emailOf(loginProps.loggedInUser)}`);
       if (loginProps.email !== '' && loginProps.password !== '') {
@@ -21,6 +22,12 @@ export default function SignInOutPScreen( {auth, loginProps} ) {
 
       return () => {
         // Executed when exiting component
+        if (textFix == 1) {
+          this.exitFix.focus();
+        } else if (textFix == 2){
+          this.passFix.focus();
+        }
+        console.log("set text fix", textFix)
         console.log(`on exit: emailOf(auth.currentUser)=${emailOf(auth.currentUser)}`);
         console.log(`on exit: emailOf(logingProps.loggedInUser)=${emailOf(loginProps.loggedInUser)}`);
       }
@@ -107,6 +114,7 @@ export default function SignInOutPScreen( {auth, loginProps} ) {
         }
       }
     }
+  
 
   return (
     <View style={styles.screen}>
@@ -115,14 +123,22 @@ export default function SignInOutPScreen( {auth, loginProps} ) {
             <Text style={styles.inputLabel}>Email:</Text>
     <TextInput style={styles.input} label="Username"
       value = {loginProps.email}
-      onChangeText={(value) => {console.log("on Change Email Txt", value); loginProps.setEmail(value) }} />
+      ref = {(input) => {this.exitFix = input}}
+      onChangeText={(value) => {console.log("on Change Email Txt", value); 
+      loginProps.setEmail(value); 
+      textFix = 1;
+      }} />
     <Text style={styles.inputLabel}>Password:</Text>
     <TextInput
       style={styles.input}
       label="Password"
       // secureTextEntry
       value = {loginProps.password}
-      onChangeText={(value) => loginProps.setPassword(value)}
+      ref = {(input) => {this.passFix = input}}
+      onChangeText={(value) => {console.log("on Change Pass Txt", value); 
+      loginProps.setPassword(value); 
+      textFix = 2;
+      }}
     />
           </View>
           <View style={styles.labeledInput}>
@@ -132,14 +148,14 @@ export default function SignInOutPScreen( {auth, loginProps} ) {
               mode="contained" 
               style={styles.button}
               labelStyle={styles.buttonText}
-              onPress={() => signInUserEmailPassword()}>
+              onPress={() => { textFix = 0; signInUserEmailPassword()}}>
                 Sign In
             </Button>
             <Button
               mode="contained" 
               style={styles.button}
               labelStyle={styles.buttonText}
-              onPress={() => signUpUserEmailPassword()}>
+              onPress={() => { textFix = 0; signUpUserEmailPassword();}}>
                 Sign Up
             </Button>
           </View>
