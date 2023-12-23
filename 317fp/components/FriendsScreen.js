@@ -14,9 +14,9 @@ export default function FriendsScreen() {
 
     const {firebaseProps, socialProps} = useContext(StateContext);
     console.log("here is socialProps: ", socialProps);
-    const email = socialProps.email;
     const db = firebaseProps.db;
     const auth = firebaseProps.auth;
+    const email = auth.currentUser?.email
 
     /*async function requestFriend(friendEmail) {
       const now = new Date();
@@ -31,18 +31,21 @@ export default function FriendsScreen() {
     }*/
 
      function fetchFriends() {
-      console.log("email in fetchFriends: ", email)
-      /*const docRef = doc(db, "FriendsList", email);
+      //console.log("email in fetchFriends: ", email)
+      const docRef = doc(db, "FriendsLists", email);
+      console.log("This is the docRef: ",docRef);
       getDoc(docRef).then(
         (docSnap) => {
         if (docSnap.exists()) {
-          console.log("Document data:", docSnap.friendsArray());
-          setFriendsList(prevFriendList => (docSnap.friendsArray));
+            console.log("This is the docSnap: ", docSnap);
+          console.log("Document data from friendArray:", docSnap.friendArray);
+          setFriendsList(prevFriendList => (docSnap.friendArray));
+          //console.log(friendsList);
         } else {
           // docSnap.data() will be undefined in this case
           console.log("No such document!");
         }
-      });*/
+      });
       
     }
 
@@ -59,7 +62,7 @@ export default function FriendsScreen() {
           value={friendInputText}
           placeholder="sample@email.com"
     />
-        <Text>'s friends</Text>
+        <Text>{email}'s friends</Text>
         <Text>{JSON.stringify(friendsList)}</Text>
 
       </View>

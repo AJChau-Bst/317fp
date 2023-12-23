@@ -55,11 +55,9 @@ const [friend, addFriend] = useState([]);
   const [isComposingMessage, setIsComposingMessage] = useState(false);
 
   //Create Props for Contexts
-  console.log("before props email is: ", email);
   const healthProps = { checkedBreakfast, setCheckedBreakfast, checkedLunch, setCheckedLunch, checkedDinner, setCheckedDinner, waterProgress, setWaterProgress, hygieneProgress, setHygieneProgress, sleepProgress, setSleepProgress, petName, setPetName };
   const loginProps = { loggedInUser, setLoggedInUser, logOut, email, setEmail, password, setPassword, friend, addFriend }
   const socialProps = { email, setEmail, friend, addFriend, statusMessage }
-  console.log("in app.js, social props is: ", socialProps);
   const firebaseProps = {auth, db}
   const allProps = { loginProps, healthProps, socialProps, firebaseProps }
 
