@@ -195,8 +195,7 @@ function HomeScreen(){
 
   function saveProgressToFirebase() {
     // Assuming 'email' contains the current user's email
-    const docRef = doc(db, "App Storage", email);
-  
+    // const docRef = doc(db, "App Storage", email);
     // Prepare the data to save
     const dataToSave = {
       waterProgress,
@@ -206,9 +205,8 @@ function HomeScreen(){
       checkedLunch,
       checkedDinner,
     };
-  
     //Save the data to Firestore
-    setDoc(docRef, dataToSave, { merge: true })
+    setDoc(doc(db, "App Storage", auth.currentUser?.email), dataToSave, { merge: true })
       .then(() => console.log("Data saved successfully!"))
       .catch(error => console.error("Error saving data:", error));
   }
@@ -221,7 +219,7 @@ function HomeScreen(){
   }, []);
 
   function getData() {
-    const docRef = doc(db, "App Storage", email);
+    const docRef = doc(db, "App Storage", auth.currentUser?.email);
     getDoc(docRef).then(docSnap => {
       if (docSnap.exists()) {
         console.log("Document data:", docSnap.data());
@@ -437,7 +435,7 @@ function StatusScreen() {
   const [hygieneCompletion, setHygieneCompletion] = useState([0]);
   
   useEffect(() => {
-    const userEmail = email;
+    const userEmail = auth.currentUser?.email;
     const documentReference = doc(db, "App Storage", userEmail);
   
     getDoc(documentReference).then(documentSnapshot => {
@@ -597,7 +595,7 @@ function SettingsScreen() {
 //Updated Friends List
 function addNewFriend(){
     try {
-      const friendPath = doc(db, "friends", email);
+      const friendPath = doc(db, "friends", auth.currentUser?.email);
       setDoc(friendPath, {
         currentFriends:{
           friends: arrayUnion(friend)
@@ -611,7 +609,7 @@ function addNewFriend(){
 
 //Update Social Use States
 function updateMessage(){
-  const friendPath = doc(db, "friends", email);
+  const friendPath = doc(db, "friends", auth.currentUser?.email);
   setDoc(friendPath, {
       message: statusMessage
       //Add Any Other Social Screen Option here

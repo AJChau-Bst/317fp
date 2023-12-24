@@ -27,7 +27,6 @@ export default function SignInOutPScreen( {auth, loginProps} ) {
         } else if (textFix == 2){
           this.passFix.focus();
         }
-        console.log("set text fix", textFix)
         console.log(`on exit: emailOf(auth.currentUser)=${emailOf(auth.currentUser)}`);
         console.log(`on exit: emailOf(logingProps.loggedInUser)=${emailOf(loginProps.loggedInUser)}`);
       }
