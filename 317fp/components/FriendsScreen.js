@@ -37,9 +37,9 @@ export default function FriendsScreen() {
       getDoc(docRef).then(
         (docSnap) => {
         if (docSnap.exists()) {
-            console.log("This is the docSnap: ", docSnap);
-          console.log("Document data from friendArray:", docSnap.friendArray);
-          setFriendsList(prevFriendList => (docSnap.friendArray));
+            console.log("This is the docSnap: ", docSnap.data());
+          console.log("Document data from friendArray:", docSnap.data().friendArray);
+          setFriendsList(prevFriendList => (docSnap.data().friendArray));
           //console.log(friendsList);
         } else {
           // docSnap.data() will be undefined in this case
