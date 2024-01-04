@@ -13,12 +13,14 @@ export default function FriendsScreen() {
 
 
   const { firebaseProps, socialProps } = useContext(StateContext);
-  console.log("here is socialProps: ", socialProps);
+  //console.log("here is socialProps: ", socialProps);
   const db = firebaseProps.db;
   const auth = firebaseProps.auth;
   const email = auth.currentUser?.email
 
-  /*async function requestFriend(friendEmail) {
+// this is still in progress!
+// a little unsure about the async lol
+  async function requestFriend(friendEmail) {
     const now = new Date();
     const curTimestamp = now.getTime()
     await setDoc(doc(db, "FriendRequests", curTimestamp),
@@ -28,12 +30,13 @@ export default function FriendsScreen() {
         timestamp: curTimestamp,
 
       });
-  }*/
+  }
 
+  //i believe this function itself works great!
   function fetchFriends() {
     //console.log("email in fetchFriends: ", email)
     const docRef = doc(db, "FriendsLists", email);
-    console.log("This is the docRef: ", docRef);
+    //console.log("This is the docRef: ", docRef);
     getDoc(docRef).then(
       (docSnap) => {
         if (docSnap.exists()) {
@@ -46,31 +49,39 @@ export default function FriendsScreen() {
         }
       });
 
-  }
+  } 
   fetchFriends();
   /*
   // need to do like a whole components thing? maybe make it a touchable opacity? who knows
   function formatFriends(friendArr) {
     friendArr.forEach(element => {
       return (
-        <ul>{JSON.stringify(element)}</ul>
+        <Ul>{JSON.stringify(element)}</Ul>
       )
     });
   }*/
+  function testerFunction(){ 
+    console.log("the enter works!!!")
+    return 0;
+   }
 
   //we'll probably sort it into two different sections
   // the top will give you the option to add a friend
   return (
     <View>
       <Text>Friends Screen!</Text>
+      <Text>Request Friends</Text>
       <TextInput
         style={styles.friendInput}
         onChangeText={setFriendInputText}
+        onKeyPress={(Enter) => testerFunction()}
         value={friendInputText}
         placeholder="sample@email.com"
       />
       <Text>{email}'s friends</Text>
-      <Text>{JSON.stringify(friendsList)}</Text>
+    <View>
+    <Text>{JSON.stringify(friendsList)}</Text>
+    </View>
 
     </View>
 

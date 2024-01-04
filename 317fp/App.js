@@ -21,6 +21,7 @@ import { getDoc, arrayUnion, setDoc, doc } from "firebase/firestore";
 import * as Location from 'expo-location';
 import StateContext from './components/StateContext.js';
 import FriendsScreen from "./components/FriendsScreen.js";
+import SocialScreen from "./components/SocialScreen.js";
 import styles from "./components/styles.js";
 
 export default function App() {
@@ -396,34 +397,6 @@ const [friend, addFriend] = useState([]);
   }
 
 
-function SocialScreen() {
-  // ideally, this function grabs your friend's messages from Firestore,
-  // and will display them-- we'll need their pet's name as the display name
-  function populateMoodBoard(){
-    //a function to format the friend messages that are displayed
-    // want to grab from the friend array --> then take the pet name
-    // and grab their status message
-    // i think it can return a JSX component 
-    return 0;
-  }
-  function updateStatusMessage() {
-    return 0;
-  }
-    /**
-   * Open an area for message composition. Currently uses conditional formatting
-   * (controlled by isComposingMessage state variabel) to do this within ChatViewScreen,
-   * but really should be done by a Modal or separate screen. 
-   */
-    function composeMessage() {
-      setIsComposingMessage(true);
-    }
-
-    return (
-      <View>
-        <Text>Social!</Text>
-      </View>
-    );
-  }
 
   const formatYAxisLabel = (value) => {
     return `${value * 100}`;
@@ -651,8 +624,8 @@ function SocialScreen() {
   function MyTabs() {
     return (
       <Tab.Navigator>
-        {/*<Tab.Screen name="Your Pet" component={HomeScreen} />
-        <Tab.Screen name="Social" component={SocialScreen} />*/}
+        {/*<Tab.Screen name="Your Pet" component={HomeScreen} /> */}
+        <Tab.Screen name="Social" component={SocialScreen} />
         <Tab.Screen name="Friends" component={FriendsScreen} />
         {/*<Tab.Screen name="Status" component={StatusScreen} />
         <Tab.Screen name="Map" component={MapScreen} />*/}
