@@ -24,14 +24,15 @@ export default function FriendsScreen() {
 //results in unhandled promise rejection errors
   async function requestFriend(friendEmail) {
     const now = new Date();
-    const curTimestamp = now.getTime()
-    await setDoc(doc(db, "FriendRequests", curTimestamp),
+    const curTimestampString = now.getTime().toString()
+    await setDoc(doc(db, "FriendRequests", curTimestampString),
       {
         requestTo: friendEmail,
         requestFrom: email,
-        timestamp: curTimestamp,
+        timestamp: curTimestampString,
 
       });
+      setTesterString(prevString => ("yay! friend requested"))
   }
 
   //issues with "set"
@@ -49,7 +50,6 @@ export default function FriendsScreen() {
     };
   }
 
-  //i believe this function itself works great!
   function fetchFriends() {
     //console.log("email in fetchFriends: ", email)
     const docRef = doc(db, "FriendsLists", email);
@@ -91,9 +91,13 @@ export default function FriendsScreen() {
       <TextInput
         style={styles.friendInput}
         onChangeText={setFriendInputText}
-        onSubmitEditing={requestFriend(friendInputText)}
+        onSubmitEditing={() => requestFriend(friendInputText)}
         value={friendInputText}
         placeholder="sample@email.com"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoComplete="off"
+        autoCorrect={false}
       />
       
       <Text> Pending Requests </Text>

@@ -18,13 +18,51 @@ export default function SocialScreen() {
     const email = auth.currentUser?.email
 
 
-    function populateMoodBoard() {
+
+    function fetchFriends() {
+        //console.log("email in fetchFriends: ", email)
+        const docRef = doc(db, "FriendsLists", email);
+        //console.log("This is the docRef: ", docRef);
+        getDoc(docRef).then(
+            (docSnap) => {
+                if (docSnap.exists()) {
+                    //console.log("This is the docSnap: ", docSnap.data());
+                    setFriendsList(prevFriendList => (docSnap.data().friendArray));
+                    //console.log(friendsList);
+                } else {
+                    // docSnap.data() will be undefined in this case
+                    console.log("No such document!");
+                }
+            });
+
+    }
+    fetchFriends();
+    function retriveMessages(friendsList) {
+        //console.log("email in fetchFriends: ", email)
+        friendsList.array.forEach
+            (element => {
+                const docRef = doc(db, "MoodMessages", element);
+                //console.log("This is the docRef: ", docRef);
+                getDoc(docRef).then(
+                    (docSnap) => {
+                        if (docSnap.exists()) {
+                            //console.log("This is the docSnap: ", docSnap.data());
+                            setFriendMessages(prevList => ([...prevList, docSnap.data().currentMood]));
+                            //console.log(friendsList);
+                        } else {
+                            // docSnap.data() will be undefined in this case
+                            console.log("No such document!");
+                        }
+                    });
+
+            });
+
         //a function to format the friend messages that are displayed
         // want to grab from the friend array --> then take the pet name
         // and grab their status message
-        // i think it can return a JSX component 
-        return 0;
+        // i think it can return a JSX component
     }
+    retriveMessages(friendsList)
     function updateStatusMessage() {
         return 0;
     }
@@ -38,9 +76,10 @@ export default function SocialScreen() {
     }
     return (
         <View>
-          <Text> Social Screen! </Text>  
+            <Text> Social Screen! </Text>
+            <Text>friendMessages</Text>
         </View>
-    
-      )
+
+    )
 
 }
