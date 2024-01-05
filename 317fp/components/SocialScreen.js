@@ -37,9 +37,11 @@ export default function SocialScreen() {
 
     }
     fetchFriends();
+
+    //pausing this a moment as we work on the friendsScreen
     function retriveMessages(friendsList) {
         //console.log("email in fetchFriends: ", email)
-        friendsList.array.forEach
+        friendsList.array.map
             (element => {
                 const docRef = doc(db, "MoodMessages", element);
                 //console.log("This is the docRef: ", docRef);
@@ -62,7 +64,7 @@ export default function SocialScreen() {
         // and grab their status message
         // i think it can return a JSX component
     }
-    retriveMessages(friendsList)
+    //retriveMessages(friendsList)
     function updateStatusMessage() {
         return 0;
     }

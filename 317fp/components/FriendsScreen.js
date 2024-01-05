@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext, Component } from 'react';
 import { Button, Text, View, TextInput, StyleSheet, Image, TouchableOpacity, SafeAreaView } from 'react-native';
 import StateContext from './StateContext.js';
-import { getDoc, arrayUnion, setDoc, doc } from "firebase/firestore";
+import { getDoc, arrayUnion, setDoc, doc, query, onValue, collection } from "firebase/firestore";
 import styles from "./styles.js";
 
 
@@ -10,7 +10,9 @@ export default function FriendsScreen() {
   const [friendInputText, setFriendInputText] = useState('');
   const [isRequestingFriend, setIsRequestingFriend] = useState(false);
   const [friendsList, setFriendsList] = useState([])
-  const [testerString, setTesterString] = useState("test!");
+  const [confirmationString, setConfirmationString] = useState("test!");
+  const [requestList, setRequestList] = useState([]);
+  const [approvalList, setApprovalList] = useState([]);
 
 
   const { firebaseProps, socialProps } = useContext(StateContext);
@@ -19,12 +21,11 @@ export default function FriendsScreen() {
   const auth = firebaseProps.auth;
   const email = auth.currentUser?.email
 
-// this is still in progress!
-// a little unsure about the async lol
-//results in unhandled promise rejection errors
+  //need to add an if statement
   async function requestFriend(friendEmail) {
     const now = new Date();
     const curTimestampString = now.getTime().toString()
+
     await setDoc(doc(db, "FriendRequests", curTimestampString),
       {
         requestTo: friendEmail,
@@ -32,23 +33,25 @@ export default function FriendsScreen() {
         timestamp: curTimestampString,
 
       });
-      setTesterString(prevString => ("yay! friend requested"))
+
+    setConfirmationStringconfirmationString(prevString => ("your friend request was sent"));
+    setFriendInputText("");
+    setRequestList(prevList => [...prevList, friendEmail]);
   }
 
-  //issues with "set"
-  function writeFriendRequest(friendEmail) {
-    //here's something else i found?
-    //const cityRef = doc(db, 'cities', 'BJ');
-    //setDoc(cityRef, { capital: true }, { merge: true });
-
-    const now = new Date();
-    const curTimestamp = now.getTime()
-    set(ref(db, "FriendRequestList", curTimestamp)), {
-      requestTo: friendEmail,
-      requestFrom: email,
-      timestamp: curTimestamp,
-    };
+  //once again causing a million unhandled promises
+  async function recieveRequests() {
+    const friendRequestsRef = collection(db, "FriendRequests");
+    //grabbing all documents that are particularly requesting the user
+    const q = query(friendRequestsRef, where("requestTo", "==", email));
+    //retrive results of the query
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((doc) => {
+      // doc.data() is never undefined for query doc snapshots
+      setApprovalList(prevList => [...prevList, doc.data().requestFrom]);
+    });
   }
+  recieveRequests();
 
   function fetchFriends() {
     //console.log("email in fetchFriends: ", email)
@@ -66,7 +69,7 @@ export default function FriendsScreen() {
         }
       });
 
-  } 
+  }
   fetchFriends();
   /*
   // need to do like a whole components thing? maybe make it a touchable opacity? who knows
@@ -77,10 +80,6 @@ export default function FriendsScreen() {
       )
     });
   }*/
-  function testerEnter(){ 
-    setTesterString(prev => ("hello"));
-    return 0;
-   }
 
   //we'll probably sort it into two different sections
   // the top will give you the option to add a friend
@@ -99,16 +98,18 @@ export default function FriendsScreen() {
         autoComplete="off"
         autoCorrect={false}
       />
-      
+
       <Text> Pending Requests </Text>
-      <Text>{testerString}</Text>
+      <Text>{JSON.stringify(requestList)}</Text>
+      <Text>{confirmationString}</Text>
       <Text> Incoming Requests </Text>
-    
+      <Text>{JSON.stringify(approvalList)}</Text>
+
 
       <Text>{email}'s friends</Text>
-    <View>
-    <Text>{JSON.stringify(friendsList)}</Text>
-    </View>
+      <View>
+        <Text>{JSON.stringify(friendsList)}</Text>
+      </View>
 
     </View>
 
