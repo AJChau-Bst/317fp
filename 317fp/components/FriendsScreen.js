@@ -10,6 +10,7 @@ export default function FriendsScreen() {
   const [friendInputText, setFriendInputText] = useState('');
   const [isRequestingFriend, setIsRequestingFriend] = useState(false);
   const [friendsList, setFriendsList] = useState([])
+  const [testerString, setTesterString] = useState("test!");
 
 
   const { firebaseProps, socialProps } = useContext(StateContext);
@@ -20,6 +21,7 @@ export default function FriendsScreen() {
 
 // this is still in progress!
 // a little unsure about the async lol
+//results in unhandled promise rejection errors
   async function requestFriend(friendEmail) {
     const now = new Date();
     const curTimestamp = now.getTime()
@@ -30,6 +32,21 @@ export default function FriendsScreen() {
         timestamp: curTimestamp,
 
       });
+  }
+
+  //issues with "set"
+  function writeFriendRequest(friendEmail) {
+    //here's something else i found?
+    //const cityRef = doc(db, 'cities', 'BJ');
+    //setDoc(cityRef, { capital: true }, { merge: true });
+
+    const now = new Date();
+    const curTimestamp = now.getTime()
+    set(ref(db, "FriendRequestList", curTimestamp)), {
+      requestTo: friendEmail,
+      requestFrom: email,
+      timestamp: curTimestamp,
+    };
   }
 
   //i believe this function itself works great!
@@ -60,8 +77,8 @@ export default function FriendsScreen() {
       )
     });
   }*/
-  function testerFunction(){ 
-    console.log("the enter works!!!")
+  function testerEnter(){ 
+    setTesterString(prev => ("hello"));
     return 0;
    }
 
@@ -69,15 +86,21 @@ export default function FriendsScreen() {
   // the top will give you the option to add a friend
   return (
     <View>
-      <Text>Friends Screen!</Text>
+      <Text>Friends Screen! </Text>
       <Text>Request Friends</Text>
       <TextInput
         style={styles.friendInput}
         onChangeText={setFriendInputText}
-        onKeyPress={(Enter) => testerFunction()}
+        onSubmitEditing={requestFriend(friendInputText)}
         value={friendInputText}
         placeholder="sample@email.com"
       />
+      
+      <Text> Pending Requests </Text>
+      <Text>{testerString}</Text>
+      <Text> Incoming Requests </Text>
+    
+
       <Text>{email}'s friends</Text>
     <View>
     <Text>{JSON.stringify(friendsList)}</Text>
