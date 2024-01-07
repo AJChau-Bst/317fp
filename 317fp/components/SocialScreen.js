@@ -9,10 +9,11 @@ import MoodMessage from './MoodMessage.js';
 
 export default function SocialScreen() {
 
-    const [isComposingMessage, setIsComposingMessage] = useState(false);
+    const [hasComposedMessage, setHasComposedMessage] = useState(false);
     const [friendsList, setFriendsList] = useState([]);
     const [friendMessages, setFriendMessages] = useState([]);
     const [moodMessageInputText, setMoodMessageInputText] = useState("");
+    const [currentMood, setCurrentMood] = useState("")
 
 
     const { firebaseProps, socialProps } = useContext(StateContext);
@@ -56,9 +57,7 @@ export default function SocialScreen() {
         return { ...data, date: turnISOtoNormal(data.timestamp) }
 
     }
-    function currentMoodAsData() {
 
-    }
 
 
     function retriveMessagesFromFirebase(listOfFriends) {
@@ -109,6 +108,8 @@ export default function SocialScreen() {
     }
 
     function writeMoodMessage() {
+        setCurrentMood(prevMood => (moodMessageInputText));
+        setHasComposedMessage(true);
         setMoodMessageInputText(''); // clear text input for next time
         const now = new Date();
         const timestampString = JSON.stringify(now.getTime()); // millsecond timestamp
@@ -118,12 +119,6 @@ export default function SocialScreen() {
             email: email,
             timestamp: timestampString
         });
-
-        return (
-            <View>
-
-            </View>
-        )
 
     };
 
@@ -143,12 +138,17 @@ export default function SocialScreen() {
                 autoCorrect={true}
             />
             <Text>Your Current Mood</Text>
-            {(friendMessages.length === 0) ?
-                <Text></Text> :
-                <Text></Text>
+            {(hasComposedMessage) ?
+                <Card>
+                    <Card.Title title={email + "'s MoodMessage"} />
+                    <Card.Content>
+                        <Text variant="bodyLarge">{currentMood}</Text>
+                        <Text variant="bodySmall">Posted at: will be real once i figure out firebase!</Text>
+                    </Card.Content>
+                </Card> :
+                <Text> You have yet to post your first Mood </Text>
             }
-            <MoodMessageItem message={datum.item}></MoodMessageItem>
-            <Text>Friend's Mood Messages</Text>
+            <Text> Friend's Mood Messages</Text>
             {(friendMessages.length === 0) ?
                 <Text>Your Friends Haven't Posted Their Moods Yet</Text> :
                 <FlatList style={styles.messageList}
