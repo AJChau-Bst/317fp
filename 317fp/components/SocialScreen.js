@@ -56,12 +56,14 @@ export default function SocialScreen() {
         return { ...data, date: turnISOtoNormal(data.timestamp) }
 
     }
+    function currentMoodAsData() {
+
+    }
 
 
 
 
     //pausing this a moment as we work on the friendsScreen
-    //marleigh made
     function retriveMessagesFromFirebase(listOfFriends) {
         const messages = [];
         //console.log("email in fetchFriends: ", email)
@@ -111,7 +113,7 @@ export default function SocialScreen() {
             </View>
         );
     }
-    //marleigh things!
+
     function writeMoodMessage() {
         setMoodMessageInputText(''); // clear text input for next time
         const now = new Date();
@@ -131,101 +133,6 @@ export default function SocialScreen() {
 
     };
 
-    /**
-    * Open an area for message composition. Currently uses conditional formatting
-    * (controlled by isComposingMessage state variabel) to do this within ChatViewScreen,
-    * but really should be done by a Modal or separate screen. 
-    */
-    /**
-    * Post a message to the the currently selected chat room.
-    */
-
-    function ComposeMessagePane() {
-
-        // Lyn sez: dunno why, but declaring this state variable *outside*
-        // of this local component causes keyboard to close every time
-        // a character is typed. 
-        const [textInputValue, setTextInputValue] = useState('');
-
-        /**
-         * Post a message to the the currently selected chat room.
-         */
-        async function postMessage() {
-            // Keyboard.dismiss(); // hide the keyboard upon posting
-            setIsComposingMessage(false); // remove composition pane
-            setTextInputValue(''); // clear text input for next time
-            const now = new Date();
-            const timestamp = now.getTime(); // millsecond timestamp
-            const newMessage = {
-                'author': loginProps.loggedInUser.email,
-                'date': now,
-                'timestamp': timestamp,
-                'channel': selectedChannel,
-                'content': textInputValue,
-            }
-            // New for images. Add imageUri to newMessage if there is one. 
-            if (postImageUri) {
-                newMessage.imageUri = postImageUri; // Local image uri
-            }
-            // Want to see new message immediately, no matter what,
-            // independent of local vs Firebase mode. 
-            setSelectedMessages([...selectedMessages, newMessage])
-
-            if (!postImageUri) {
-                firebasePostMessage(newMessage);
-            } else {
-                // New for images: 
-                // Posting message with image is more complicated,
-                // have a separate helper function for this
-                firebasePostMessageWithImage(newMessage)
-            }
-
-        }
-
-        return (
-            isComposingMessage &&
-            <View style={styles.composePane}>
-                <TextInput
-                    multiline
-                    placeholder="message text goes here"
-                    style={styles.textInputArea}
-                    value={textInputValue}
-                    onChangeText={setTextInputValue}
-                />
-                {// New for imaages. Conditionally display image if there is one: 
-                    postImageUri &&
-                    <Image
-                        style={styles.thumbnail}
-                        source={{ uri: postImageUri }}
-                    />
-                }
-                <View style={globalStyles.buttonHolder}>
-                    <Button
-                        mode="contained"
-                        style={globalStyles.button}
-                        labelStyle={globalStyles.buttonText}
-                        onPress={cancelMessage}>
-                        Cancel
-                    </Button>
-                    {/* New for images: a button to add an image. */}
-                    <Button
-                        mode="contained"
-                        style={globalStyles.button}
-                        labelStyle={globalStyles.buttonText}
-                        onPress={addImageToMessage}>
-                        Add Image
-                    </Button>
-                    <Button
-                        mode="contained"
-                        style={globalStyles.button}
-                        labelStyle={globalStyles.buttonText}
-                        onPress={postMessage}>
-                        Post
-                    </Button>
-                </View>
-            </View>
-        );
-    }
     return (
         <View>
             <Text> Social Screen! </Text>
@@ -241,6 +148,12 @@ export default function SocialScreen() {
                 autoComplete="off"
                 autoCorrect={true}
             />
+            <Text>Your Current Mood</Text>
+            {(friendMessages.length === 0) ?
+                <Text></Text> :
+                <Text></Text>
+            }
+            <MoodMessageItem message={datum.item}></MoodMessageItem>
             <Text>Friend's Mood Messages</Text>
             {(friendMessages.length === 0) ?
                 <Text>Your Friends Haven't Posted Their Moods Yet</Text> :
