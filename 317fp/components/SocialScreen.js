@@ -61,9 +61,6 @@ export default function SocialScreen() {
     }
 
 
-
-
-    //pausing this a moment as we work on the friendsScreen
     function retriveMessagesFromFirebase(listOfFriends) {
         const messages = [];
         //console.log("email in fetchFriends: ", email)
@@ -77,7 +74,6 @@ export default function SocialScreen() {
                         console.log("we're pushing!");
                         messages.push(docToMoodMessage(docSnap));
                         console.log("here's message post docSnap push: ", messages);
-                        // could make a doc.message to fix the timestamp
                     }
                     else {
                         // docSnap.data() will be undefined in this case
@@ -86,13 +82,11 @@ export default function SocialScreen() {
                 });
 
         });
-        // first issue is that message ends empty, so there is some issue there
-        // i changed to "===" instead of "!===" and got an error
-        // Type Error setFreindMessages as Read Only
+        // the message array ends empty? and I'm not quite sure why
         console.log("here's the messages: ", JSON.stringify(messages));
         if (JSON.stringify(messages) !== JSON.stringify(friendMessages)) {
             console.log("the two are different!");
-            setFriendMessages = (messages);
+            setFriendMessages(messages);
         }
     };
     retriveMessagesFromFirebase(friendsList)
