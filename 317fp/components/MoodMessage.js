@@ -16,4 +16,20 @@ export default function MoodMessage({ friendEmail, friendMessage, timestampStrin
             </Card.Content>
         </Card>
     );
+    /*
+    // saving some old code
+    return (
+        <Card>
+            <Card.Title title={element + "'s MoodMessage"} />
+                <Card.Content>
+                <Text variant="bodyMedium">
+                    {JSON.stringify(docSnap.data().currentMood)}
+                </Text>
+                <Text variant="bodyMedium">
+                Posted at: {JSON.stringify(docSnap.data().timestamp)}
+                </Text>
+                </Card.Content>
+                </Card>
+                        );
+    */
 }

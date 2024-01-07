@@ -1,14 +1,13 @@
 import { useState, useEffect, useContext, Component } from 'react';
 import { Button, Text, View, TextInput, StyleSheet, Image, TouchableOpacity, SafeAreaView } from 'react-native';
 import StateContext from './StateContext.js';
-import { getDoc, arrayUnion, setDoc, doc, query, onValue, collection } from "firebase/firestore";
+import { getDoc, set, arrayUnion, addDoc, setDoc, getDocs, doc, query, onValue, collection, where } from "firebase/firestore";
 import styles from "./styles.js";
 
 
 export default function FriendsScreen() {
 
   const [friendInputText, setFriendInputText] = useState('');
-  const [isRequestingFriend, setIsRequestingFriend] = useState(false);
   const [friendsList, setFriendsList] = useState([])
   const [confirmationString, setConfirmationString] = useState("test!");
   const [requestList, setRequestList] = useState([]);
@@ -16,7 +15,6 @@ export default function FriendsScreen() {
 
 
   const { firebaseProps, socialProps } = useContext(StateContext);
-  //console.log("here is socialProps: ", socialProps);
   const db = firebaseProps.db;
   const auth = firebaseProps.auth;
   const email = auth.currentUser?.email
@@ -34,24 +32,39 @@ export default function FriendsScreen() {
 
       });
 
-    setConfirmationStringconfirmationString(prevString => ("your friend request was sent"));
+    setConfirmationString(prevString => ("your friend request was sent"));
     setFriendInputText("");
     setRequestList(prevList => [...prevList, friendEmail]);
   }
 
   //once again causing a million unhandled promises
+  // real time updates? might not have time for it
+  // it pushes changes when they occur
+  // compare prev results to current, don't call the setter unless they're different
+  // leave the page and come back to the screen to see the requests
+  // check out the chat app
+
+  /*
   async function recieveRequests() {
     const friendRequestsRef = collection(db, "FriendRequests");
+    //to make sure we're not rerendering the page!
+    var docRecieveList = [];
     //grabbing all documents that are particularly requesting the user
     const q = query(friendRequestsRef, where("requestTo", "==", email));
     //retrive results of the query
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
       // doc.data() is never undefined for query doc snapshots
-      setApprovalList(prevList => [...prevList, doc.data().requestFrom]);
+      docRecieveList = [...docRecieveList, doc.data().requestFrom]
+      console.log("Helper List Value: ", docRecieveList);
+      //setApprovalList(prevList => [...prevList, doc.data().requestFrom]);
+      //if (JSON.stringify(docRecieveList) !== JSON.stringify(approvalList)) {
+        //setApprovalList(prevList => [...prevList, doc.data().requestFrom]);
+      //}
     });
   }
-  recieveRequests();
+  */
+  //recieveRequests().then(results => console.log("here are the results: ", results));
 
   function fetchFriends() {
     //console.log("email in fetchFriends: ", email)
@@ -61,7 +74,11 @@ export default function FriendsScreen() {
       (docSnap) => {
         if (docSnap.exists()) {
           //console.log("This is the docSnap: ", docSnap.data());
-          setFriendsList(prevFriendList => (docSnap.data().friendArray));
+
+          // compare the friendArray, if it hasn't changed don't call setFriends
+          if (JSON.stringify(docSnap.data().friendArray) !== JSON.stringify(friendsList)) {
+            setFriendsList(prevFriendList => (docSnap.data().friendArray));
+          }
           //console.log(friendsList);
         } else {
           // docSnap.data() will be undefined in this case
@@ -71,15 +88,6 @@ export default function FriendsScreen() {
 
   }
   fetchFriends();
-  /*
-  // need to do like a whole components thing? maybe make it a touchable opacity? who knows
-  function formatFriends(friendArr) {
-    friendArr.forEach(element => {
-      return (
-        <Ul>{JSON.stringify(element)}</Ul>
-      )
-    });
-  }*/
 
   //we'll probably sort it into two different sections
   // the top will give you the option to add a friend
