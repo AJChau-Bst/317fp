@@ -87,5 +87,8 @@ const styles = StyleSheet.create({
       borderWidth: 1,
       padding: 10,
     },
+    personalMoodMessage: {
+      backgroundColor: 'pink',
+    },
   });
   export default styles;

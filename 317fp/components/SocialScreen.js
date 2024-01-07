@@ -13,7 +13,8 @@ export default function SocialScreen() {
     const [friendsList, setFriendsList] = useState([]);
     const [friendMessages, setFriendMessages] = useState([]);
     const [moodMessageInputText, setMoodMessageInputText] = useState("");
-    const [currentMood, setCurrentMood] = useState("")
+    const [currentMood, setCurrentMood] = useState("");
+
 
 
     const { firebaseProps, socialProps } = useContext(StateContext);
@@ -57,6 +58,21 @@ export default function SocialScreen() {
         return { ...data, date: turnISOtoNormal(data.timestamp) }
 
     }
+    function userMoodToMoodMessage() {
+        const docRef = doc(db, "MoodMessages", email);
+        getDoc(docRef).then(
+            (docSnap) => {
+                if (docSnap.exists()) {
+                    console.log("what we're returning", docToMoodMessage(docSnap));
+                    return (docToMoodMessage(docSnap));
+                    //console.log(friendsList);
+                } else {
+                    // docSnap.data() will be undefined in this case
+                    console.log("No such document!");
+                }
+            });
+
+    }
 
 
 
@@ -89,17 +105,18 @@ export default function SocialScreen() {
         }
     };
     retriveMessagesFromFirebase(friendsList)
-    const MoodMessageItem = ({ message }) => {
+    const MoodMessageItem = ({ messageItem }) => {
+        console.log("message before it broke: ", messageItem);
         return (
             <View>
                 <Card>
-                    <Card.Title title={message.email + "'s MoodMessage"} />
+                    <Card.Title title={messageItem.email + "'s MoodMessage"} titleStyle={{ color: "green" }} />
                     <Card.Content>
                         <Text variant="bodyMedium">
-                            {message.currentMood}
+                            {messageItem.currentMood}
                         </Text>
                         <Text variant="bodyMedium">
-                            Posted at: {message.date}
+                            Posted at: {messageItem.date}
                         </Text>
                     </Card.Content>
                 </Card>
@@ -137,15 +154,17 @@ export default function SocialScreen() {
                 autoComplete="off"
                 autoCorrect={true}
             />
-            <Text>Your Current Mood</Text>
             {(hasComposedMessage) ?
-                <Card>
-                    <Card.Title title={email + "'s MoodMessage"} />
-                    <Card.Content>
-                        <Text variant="bodyLarge">{currentMood}</Text>
-                        <Text variant="bodySmall">Posted at: will be real once i figure out firebase!</Text>
-                    </Card.Content>
-                </Card> :
+                <View style = {styles.personalMoodMessage}>
+                    <Card>
+                        <Card.Title title={"Your Current MoodMessage"} titleStyle={{ color: "pink" }} />
+                        <Card.Content>
+                            <Text variant="headlineMedium">{currentMood}</Text>
+                            <Text variant="bodySmall">Posted at: will be real once i figure out firebase!</Text>
+                        </Card.Content>
+                    </Card>
+                </View>
+                :
                 <Text> You have yet to post your first Mood </Text>
             }
             <Text> Friend's Mood Messages</Text>
