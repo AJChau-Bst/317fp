@@ -142,7 +142,9 @@ export default function SocialScreen() {
         return (
             <View>
                 <Card>
-                    <Card.Title title={message.currentMood} titleStyle={{ color: "green" }} />
+                    <Card.Title title={message.currentMood} 
+                    titleNumberOfLines={2}
+                    titleStyle={{ color: "green" }} />
                     <Card.Content>
                         <Text variant="bodyMedium">
                             Posted by your friend: {message.email}
@@ -189,7 +191,7 @@ export default function SocialScreen() {
             {(hasComposedMessage) ?
                 <View >
                     <Card>
-                        <Card.Title title={userCurrentMood} titleStyle={{ color: "pink" }} />
+                        <Card.Title title={userCurrentMood} titleNumberOfLines ={2} titleStyle={{ color: "pink" }} />
                         <Card.Content>
                             <Text variant="headlineMedium">Posted by you: {email}</Text>
                             <Text variant="headlineMedium">Posted at: {moodUploadTime}</Text>
