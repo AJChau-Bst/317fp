@@ -58,9 +58,16 @@ export default function SocialScreen() {
 
     function docToMoodMessage(inputDoc) {
         console.log("docToMoodMessage inputDoc: ", inputDoc);
+        // gotta see if the inputDoc exists
         const data = inputDoc.data();
         console.log("here's the data in docToMoodMessage: ", data);
-        return { ...data, date: turnISOtoNormal(JSON.parse(data.timestamp)) }
+        if (data !== undefined) {
+            return { ...data, date: turnISOtoNormal(JSON.parse(data.timestamp)) }
+        }
+        else {
+            console.log("this doc is undefined!");
+            return null;
+        }
 
     }
     function userMoodToMoodMessage() {
@@ -114,7 +121,17 @@ export default function SocialScreen() {
     function getDocSnapshotPromise(friendEmail) {
         console.log("this is friendEmail: ", friendEmail);
         const docRef = doc(db, "MoodMessages", friendEmail);
-        return getDoc(docRef); 
+        /*getDoc(docRef).then(
+            (docSnap) => {
+                if (docSnap.exists()) {
+                    return getDoc(docRef);
+                }
+                else {
+                    console.log(friendEmail, " has not posted their mood!");
+                }
+            });
+            */
+        return getDoc(docRef);
     }
     function messageListEquals(mList1, mList2) {
         // console.log("Calling messageListEquals ", mList1, mList2);
@@ -132,93 +149,102 @@ export default function SocialScreen() {
         const docSnapshotPromiseList = listOfFriends.map(getDocSnapshotPromise);
         console.log("In retrieveMessagesFromFirebase, docSnapshotPromiseList is", JSON.stringify(docSnapshotPromiseList))
         Promise.all(docSnapshotPromiseList).then(docSnaps => {
-            const newFriendMessages = docSnaps.map(docToMoodMessage);
+            const unfilteredNewFriendMessages = docSnaps.map(docToMoodMessage);
+            console.log("pre-filtered messages: ", unfilteredNewFriendMessages);
+            // need to remove the docSnap that is empty, so our undefined is removed
+            // we can apply a filter!
+            const newFriendMessages = unfilteredNewFriendMessages.filter(removeNull);
             console.log("In retrieveMessagesFromFirebase, newFriendMessages is", newFriendMessages);
             console.log("In retrieveMessagesFromFirebase, friendMessages is", friendMessages);
             if (!messageListEquals(newFriendMessages, friendMessages)) {
                 console.log("In retrieveMessagesFromFirebase, setFriendMessages to newFriendMessages.")
                 setFriendMessages(newFriendMessages);
             }
-        })};
+        })
+    };
+
+    function removeNull(listItem) {
+        return (listItem !== null)
+    }
 
 
-        retrieveMessagesFromFirebase(friendsList)
-        const MoodMessageItem = ({ message }) => {
-            console.log("message before it broke: ", message);
-            return (
-                <View>
+    retrieveMessagesFromFirebase(friendsList)
+    const MoodMessageItem = ({ message }) => {
+        console.log("message before it broke: ", message);
+        return (
+            <View>
+                <Card>
+                    <Card.Title title={message.currentMood} titleStyle={{ color: "green" }} />
+                    <Card.Content>
+                        <Text variant="bodyMedium">
+                            Posted by your friend: {message.email}
+                        </Text>
+                        <Text variant="bodyMedium">
+                            Posted at: {message.date}
+                        </Text>
+                    </Card.Content>
+                </Card>
+            </View>
+        );
+    }
+
+    function writeMoodMessage() {
+        setCurrentMood(prevMood => (moodMessageInputText));
+        setHasComposedMessage(true);
+        setMoodMessageInputText(''); // clear text input for next time
+        const now = new Date();
+        const timestampInt = now.getTime(); // millsecond timestamp
+
+        setDoc(doc(db, 'MoodMessages', email), {
+            currentMood: moodMessageInputText,
+            email: email,
+            timestamp: timestampInt
+        });
+
+    };
+
+    return (
+        <View>
+            <Text> Social Screen! </Text>
+            <Text>Write Your MoodMessage</Text>
+            <TextInput
+                style={styles.friendInput}
+                onChangeText={setMoodMessageInputText}
+                onSubmitEditing={() => writeMoodMessage(moodMessageInputText)}
+                value={moodMessageInputText}
+                placeholder="tell your friends how you're feeling"
+                keyboardType="default"
+                autoCapitalize="none"
+                autoComplete="off"
+                autoCorrect={true}
+            />
+            {(hasComposedMessage) ?
+                <View style={styles.personalMoodMessage}>
                     <Card>
-                        <Card.Title title={message.currentMood} titleStyle={{ color: "green" }} />
+                        <Card.Title title={currentMood} titleStyle={{ color: "pink" }} />
                         <Card.Content>
-                            <Text variant="bodyMedium">
-                                Posted by your friend: {message.email}
-                            </Text>
-                            <Text variant="bodyMedium">
-                                Posted at: {message.date}
-                            </Text>
+                            <Text variant="headlineMedium">Posted by you: {email}</Text>
+                            <Text variant="bodySmall">Posted at: will be real once i figure out firebase!</Text>
                         </Card.Content>
                     </Card>
                 </View>
-            );
-        }
-
-        function writeMoodMessage() {
-            setCurrentMood(prevMood => (moodMessageInputText));
-            setHasComposedMessage(true);
-            setMoodMessageInputText(''); // clear text input for next time
-            const now = new Date();
-            const timestampInt = now.getTime(); // millsecond timestamp
-
-            setDoc(doc(db, 'MoodMessages', email), {
-                currentMood: moodMessageInputText,
-                email: email,
-                timestamp: timestampInt
-            });
-
-        };
-
-        return (
-            <View>
-                <Text> Social Screen! </Text>
-                <Text>Write Your MoodMessage</Text>
-                <TextInput
-                    style={styles.friendInput}
-                    onChangeText={setMoodMessageInputText}
-                    onSubmitEditing={() => writeMoodMessage(moodMessageInputText)}
-                    value={moodMessageInputText}
-                    placeholder="tell your friends how you're feeling"
-                    keyboardType="default"
-                    autoCapitalize="none"
-                    autoComplete="off"
-                    autoCorrect={true}
+                :
+                <Text> You have yet to post your first Mood </Text>
+            }
+            <Text> Friend's Mood Messages</Text>
+            {(friendMessages.length === 0) ?
+                <Text>Your Friends Haven't Posted Their Moods Yet</Text> :
+                <FlatList style={styles.messageList}
+                    data={friendMessages}
+                    renderItem={datum =>
+                        <MoodMessageItem message={datum.item}></MoodMessageItem>
+                    }
+                    // keyExtractor extracts a unique key for each item, 
+                    // which removes warnings about missing keeys 
+                    keyExtractor={item => item.timestamp}
                 />
-                {(hasComposedMessage) ?
-                    <View style={styles.personalMoodMessage}>
-                        <Card>
-                            <Card.Title title={currentMood} titleStyle={{ color: "pink" }} />
-                            <Card.Content>
-                                <Text variant="headlineMedium">Posted by you: {email}</Text>
-                                <Text variant="bodySmall">Posted at: will be real once i figure out firebase!</Text>
-                            </Card.Content>
-                        </Card>
-                    </View>
-                    :
-                    <Text> You have yet to post your first Mood </Text>
-                }
-                <Text> Friend's Mood Messages</Text>
-                {(friendMessages.length === 0) ?
-                    <Text>Your Friends Haven't Posted Their Moods Yet</Text> :
-                    <FlatList style={styles.messageList}
-                        data={friendMessages}
-                        renderItem={datum =>
-                            <MoodMessageItem message={datum.item}></MoodMessageItem>
-                        }
-                        // keyExtractor extracts a unique key for each item, 
-                        // which removes warnings about missing keeys 
-                        keyExtractor={item => item.timestamp}
-                    />
 
-                }</View>
-        )
+            }</View>
+    )
 
-    }
+}
