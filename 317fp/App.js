@@ -622,11 +622,11 @@ function updateMessage(){
   function MyTabs() {
     return (
       <Tab.Navigator>
-        {/*<Tab.Screen name="Your Pet" component={HomeScreen} /> */}
+        <Tab.Screen name="Your Pet" component={HomeScreen} />
         <Tab.Screen name="Social" component={SocialScreen} />
         <Tab.Screen name="Friends" component={FriendsScreen} />
-        {/*<Tab.Screen name="Status" component={StatusScreen} />
-        <Tab.Screen name="Map" component={MapScreen} />*/}
+        <Tab.Screen name="Status" component={StatusScreen} />
+        <Tab.Screen name="Map" component={MapScreen} />
       </Tab.Navigator>
     );
   }
