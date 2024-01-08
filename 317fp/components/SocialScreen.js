@@ -14,7 +14,8 @@ export default function SocialScreen() {
     const [friendsList, setFriendsList] = useState([]);
     const [friendMessages, setFriendMessages] = useState([]);
     const [moodMessageInputText, setMoodMessageInputText] = useState("");
-    const [currentMood, setCurrentMood] = useState("");
+    const [userCurrentMood, setUserCurrentMood] = useState("");
+    const [moodUploadTime, setMoodUploadTime] = useState("");
 
 
 
@@ -70,67 +71,35 @@ export default function SocialScreen() {
         }
 
     }
-    function userMoodToMoodMessage() {
+    function getUserMoodMessage() {
         const docRef = doc(db, "MoodMessages", email);
         getDoc(docRef).then(
             (docSnap) => {
                 if (docSnap.exists()) {
-                    console.log("what we're returning", docToMoodMessage(docSnap));
-                    return (docToMoodMessage(docSnap));
+                    setHasComposedMessage(true);
+                    userMoodString = docSnap.data().currentMood;
+                    moodUploadTimeString = turnISOtoNormal(JSON.parse(docSnap.data().timestamp));
+                    console.log("the mood on the doc!: ", userMoodString);
+                    if (userMoodString !== userCurrentMood) {
+                        setUserCurrentMood(userMoodString);
+                    }
+                    if (moodUploadTimeString !== moodUploadTime) {
+                        setMoodUploadTime(moodUploadTimeString);
+                    }
                     //console.log(friendsList);
                 } else {
                     // docSnap.data() will be undefined in this case
-                    console.log("No such document!");
+                    console.log("no such user mood yet");
                 }
             });
 
     }
+    getUserMoodMessage();
 
-
-    /*
-        function retrieveMessagesFromFirebase(listOfFriends) {
-            const messages = [];
-            //console.log("email in fetchFriends: ", email)
-            listOfFriends.map((element) => {
-                console.log("this is my elm: ", element);
-                const docRef = doc(db, "MoodMessages", element);
-                getDoc(docRef).then(
-                    (docSnap) => {
-                        if (docSnap.exists()) {
-                            console.log("This is the docSnap: ", docSnap.data());
-                            console.log("we're pushing!");
-                            messages.push(docToMoodMessage(docSnap));
-                            console.log("here's message post docSnap push: ", messages);
-                        }
-                        else {
-                            // docSnap.data() will be undefined in this case
-                            console.log("No such document!");
-                        }
-                    });
-    
-            });
-            // the message array ends empty? and I'm not quite sure why
-            console.log("here's the messages: ", JSON.stringify(messages));
-            if (JSON.stringify(messages) !== JSON.stringify(friendMessages)) {
-                console.log("the two are different!");
-                setFriendMessages(messages);
-            }
-        };
-        */
     // Returns a *promise* for a document snapshot
     function getDocSnapshotPromise(friendEmail) {
         console.log("this is friendEmail: ", friendEmail);
         const docRef = doc(db, "MoodMessages", friendEmail);
-        /*getDoc(docRef).then(
-            (docSnap) => {
-                if (docSnap.exists()) {
-                    return getDoc(docRef);
-                }
-                else {
-                    console.log(friendEmail, " has not posted their mood!");
-                }
-            });
-            */
         return getDoc(docRef);
     }
     function messageListEquals(mList1, mList2) {
@@ -170,7 +139,6 @@ export default function SocialScreen() {
 
     retrieveMessagesFromFirebase(friendsList)
     const MoodMessageItem = ({ message }) => {
-        console.log("message before it broke: ", message);
         return (
             <View>
                 <Card>
@@ -189,7 +157,7 @@ export default function SocialScreen() {
     }
 
     function writeMoodMessage() {
-        setCurrentMood(prevMood => (moodMessageInputText));
+        setUserCurrentMood(prevMood => (moodMessageInputText));
         setHasComposedMessage(true);
         setMoodMessageInputText(''); // clear text input for next time
         const now = new Date();
@@ -219,17 +187,17 @@ export default function SocialScreen() {
                 autoCorrect={true}
             />
             {(hasComposedMessage) ?
-                <View style={styles.personalMoodMessage}>
+                <View >
                     <Card>
-                        <Card.Title title={currentMood} titleStyle={{ color: "pink" }} />
+                        <Card.Title title={userCurrentMood} titleStyle={{ color: "pink" }} />
                         <Card.Content>
                             <Text variant="headlineMedium">Posted by you: {email}</Text>
-                            <Text variant="bodySmall">Posted at: will be real once i figure out firebase!</Text>
+                            <Text variant="headlineMedium">Posted at: {moodUploadTime}</Text>
                         </Card.Content>
                     </Card>
                 </View>
                 :
-                <Text> You have yet to post your first Mood </Text>
+                <Text> You have yet to post a Mood! </Text>
             }
             <Text> Friend's Mood Messages</Text>
             {(friendMessages.length === 0) ?
