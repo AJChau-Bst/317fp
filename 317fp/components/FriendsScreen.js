@@ -9,17 +9,31 @@ export default function FriendsScreen() {
 
   const [friendInputText, setFriendInputText] = useState('');
   const [friendsList, setFriendsList] = useState([])
-  const [confirmationString, setConfirmationString] = useState("test!");
+  const [confirmationString, setConfirmationString] = useState("");
+
+  //requestList state hook would be used in tandem with the
+  //inactive request friends function
   const [requestList, setRequestList] = useState([]);
+
+  /*
+  the approvalList state hook is used in the defunct
+  recieveRequests function
   const [approvalList, setApprovalList] = useState([]);
+  */
 
 
-  const { firebaseProps, socialProps } = useContext(StateContext);
+  const { firebaseProps } = useContext(StateContext);
   const db = firebaseProps.db;
   const auth = firebaseProps.auth;
   const email = auth.currentUser?.email
 
-  //need to add an if statement
+  /*
+    An unused and partially functional function to write
+    friend requests to firebase. While the function of retreiving requests
+    is not operational, this function will succesfully write the friend request
+    For the future, we would like to add a conditional that will not allow
+    Friend requests to be put in if the user has already requested the friend 
+  */
   async function requestFriend(friendEmail) {
     const now = new Date();
     const curTimestampString = now.getTime().toString()
@@ -33,10 +47,9 @@ export default function FriendsScreen() {
       });
 
     setConfirmationString(prevString => ("your friend request was sent"));
-    //setFriendInputText("");
     setRequestList(prevList => [...prevList, friendEmail]);
   }
- 
+
   async function addFriend(friendEmail) {
 
     const newFriendArray = [...friendsList, friendEmail];
@@ -52,13 +65,10 @@ export default function FriendsScreen() {
 
 
 
-  //once again causing a million unhandled promises
-  // real time updates? might not have time for it
-  // it pushes changes when they occur
-  // compare prev results to current, don't call the setter unless they're different
-  // leave the page and come back to the screen to see the requests
-  // check out the chat app
-
+  /*
+  The bones of a recieveRequest function that is not functional
+  Leaving the code here for future development purposes
+  */
   /*
   async function recieveRequests() {
     const friendRequestsRef = collection(db, "FriendRequests");
@@ -79,7 +89,6 @@ export default function FriendsScreen() {
     });
   }
   */
-  //recieveRequests().then(results => console.log("here are the results: ", results));
 
   function fetchFriends() {
     //console.log("email in fetchFriends: ", email)
@@ -103,9 +112,6 @@ export default function FriendsScreen() {
 
   }
   fetchFriends();
-
-  //we'll probably sort it into two different sections
-  // the top will give you the option to add a friend
   return (
     <View>
       <Text>Friends Screen! </Text>

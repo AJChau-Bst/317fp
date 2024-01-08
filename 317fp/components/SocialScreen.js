@@ -4,7 +4,6 @@ import { Card, Text } from 'react-native-paper';
 import StateContext from './StateContext.js';
 import { getDoc, arrayUnion, set, addDoc, setDoc, getDocs, doc, query, onValue, collection, where } from "firebase/firestore";
 import styles from "./styles.js";
-import MoodMessage from './MoodMessage.js';
 import { simpleValueEquals, simpleObjectEquals } from "../equalityUtils.js";
 
 
@@ -19,8 +18,7 @@ export default function SocialScreen() {
 
 
 
-    const { firebaseProps, socialProps } = useContext(StateContext);
-    console.log("here is socialProps: ", socialProps);
+    const { firebaseProps } = useContext(StateContext);
     const db = firebaseProps.db;
     const auth = firebaseProps.auth;
     const email = auth.currentUser?.email
@@ -136,15 +134,14 @@ export default function SocialScreen() {
         return (listItem !== null)
     }
 
-
     retrieveMessagesFromFirebase(friendsList)
     const MoodMessageItem = ({ message }) => {
         return (
             <View>
                 <Card>
-                    <Card.Title title={message.currentMood} 
-                    titleNumberOfLines={2}
-                    titleStyle={{ color: "green" }} />
+                    <Card.Title title={message.currentMood}
+                        titleNumberOfLines={2}
+                        titleStyle={{ color: "green" }} />
                     <Card.Content>
                         <Text variant="bodyMedium">
                             Posted by your friend: {message.email}
@@ -191,7 +188,7 @@ export default function SocialScreen() {
             {(hasComposedMessage) ?
                 <View >
                     <Card>
-                        <Card.Title title={userCurrentMood} titleNumberOfLines ={2} titleStyle={{ color: "pink" }} />
+                        <Card.Title title={userCurrentMood} titleNumberOfLines={2} titleStyle={{ color: "pink" }} />
                         <Card.Content>
                             <Text variant="headlineMedium">Posted by you: {email}</Text>
                             <Text variant="headlineMedium">Posted at: {moodUploadTime}</Text>

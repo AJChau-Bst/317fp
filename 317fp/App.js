@@ -1,6 +1,6 @@
 import { NavigationContainer, Navigation } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-//import * as React from 'react';
+import * as React from 'react'
 import { useState, useEffect } from 'react';
 import { Button, Text, View, TextInput, StyleSheet, Image, TouchableOpacity, SafeAreaView } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -31,13 +31,13 @@ export default function App() {
   const auth = getAuth(firebaseApp);
   const db = getFirestore(firebaseApp);
 
-//Create Authentication Use States
-const [loggedInUser, setLoggedInUser] = useState(null);
-//const [email, setEmail] = useState(""); //input email
-//const [password, setPassword] = useState(""); //input password
-const [email, setEmail] = useState("ma108@wellesley.edu"); //testing email
-const [password, setPassword] = useState("password"); //testing password
-const [friend, addFriend] = useState([]);
+  //Create Authentication Use States
+  const [loggedInUser, setLoggedInUser] = useState(null);
+  //const [email, setEmail] = useState(""); //input email
+  //const [password, setPassword] = useState(""); //input password
+  const [email, setEmail] = useState("ma108@wellesley.edu"); //testing email
+  const [password, setPassword] = useState("password"); //testing password
+  const [friend, addFriend] = useState([]);
 
   //Create Health Use States
   const [checkedBreakfast, setCheckedBreakfast] = useState(false);
@@ -48,18 +48,11 @@ const [friend, addFriend] = useState([]);
   const [sleepProgress, setSleepProgress] = useState(0);
   const [petName, setPetName] = useState(0);
 
-  //Create Social Use States
-  const [statusMessage, setStatusMessage] = useState("")
-  const [friendMessages, setFriendMessages] = useState([]); //
-  const [liked, setLiked] = useState("")
-  const [emoji, setemoji] = useState("");
-  const [isComposingMessage, setIsComposingMessage] = useState(false);
-
   //Create Props for Contexts
   const healthProps = { checkedBreakfast, setCheckedBreakfast, checkedLunch, setCheckedLunch, checkedDinner, setCheckedDinner, waterProgress, setWaterProgress, hygieneProgress, setHygieneProgress, sleepProgress, setSleepProgress, petName, setPetName };
   const loginProps = { loggedInUser, setLoggedInUser, logOut, email, setEmail, password, setPassword, friend, addFriend }
-  const socialProps = { email, setEmail, friend, addFriend, statusMessage }
-  const firebaseProps = {auth, db}
+  const socialProps = { email, setEmail, friend, addFriend }
+  const firebaseProps = { auth, db }
   const allProps = { loginProps, healthProps, socialProps, firebaseProps }
 
 
@@ -199,23 +192,23 @@ const [friend, addFriend] = useState([]);
       });
     };
 
-  function saveProgressToFirebase() {
-    // Assuming 'email' contains the current user's email
-    // const docRef = doc(db, "App Storage", email);
-    // Prepare the data to save
-    const dataToSave = {
-      waterProgress,
-      sleepProgress,
-      hygieneProgress,
-      checkedBreakfast,
-      checkedLunch,
-      checkedDinner,
-    };
-    //Save the data to Firestore
-    setDoc(doc(db, "App Storage", auth.currentUser?.email), dataToSave, { merge: true })
-      .then(() => console.log("Data saved successfully!"))
-      .catch(error => console.error("Error saving data:", error));
-  }
+    function saveProgressToFirebase() {
+      // Assuming 'email' contains the current user's email
+      // const docRef = doc(db, "App Storage", email);
+      // Prepare the data to save
+      const dataToSave = {
+        waterProgress,
+        sleepProgress,
+        hygieneProgress,
+        checkedBreakfast,
+        checkedLunch,
+        checkedDinner,
+      };
+      //Save the data to Firestore
+      setDoc(doc(db, "App Storage", auth.currentUser?.email), dataToSave, { merge: true })
+        .then(() => console.log("Data saved successfully!"))
+        .catch(error => console.error("Error saving data:", error));
+    }
 
     useEffect(() => {
       // This function will be called when the component is unmounted
@@ -224,19 +217,22 @@ const [friend, addFriend] = useState([]);
       };
     }, []);
 
-  function getData() {
-    const docRef = doc(db, "App Storage", auth.currentUser?.email);
-    getDoc(docRef).then(docSnap => {
-      if (docSnap.exists()) {
-        console.log("Document data:", docSnap.data());
-        // Here, you can set the state or handle the fetched data as needed
-      } else {
-        console.log("No such document!");
-      }
-    }).catch(error => {
-      console.error("Error getting document:", error);
-    });
-  }
+    /*
+    This function has been used for testing
+    */
+    function getData() {
+      const docRef = doc(db, "App Storage", auth.currentUser?.email);
+      getDoc(docRef).then(docSnap => {
+        if (docSnap.exists()) {
+          console.log("Document data:", docSnap.data());
+          // Here, you can set the state or handle the fetched data as needed
+        } else {
+          console.log("No such document!");
+        }
+      }).catch(error => {
+        console.error("Error getting document:", error);
+      });
+    }
 
     const [imageKey, setImageKey] = useState('sad');
     const [emotionText, setEmotionText] = useState("");
@@ -326,9 +322,11 @@ const [friend, addFriend] = useState([]);
 
           <Text>{emotionText}</Text>
 
+          {/*
+          //This is here for testing purposes
           <TouchableOpacity onPress={resetProgressBars} style={styles.testButtonStyle}>
             <Text style={styles.buttonText}>Test Reset</Text>
-          </TouchableOpacity>
+          </TouchableOpacity>*/}
 
           <View style={styles.inlineContainer}>
             <Text>Water </Text>
@@ -387,8 +385,12 @@ const [friend, addFriend] = useState([]);
               <Text style={styles.buttonText}>Add</Text>
             </TouchableOpacity>
           </View>
+
+          {/*
+          //This is solely for testing purposes!
           <Button title="Save Data" onPress={saveProgressToFirebase} color='red' />
           <Button title="Get Data" onPress={getData} color='blue' />
+          */}
         </ScrollView>
       </SafeAreaView>
     );
@@ -404,35 +406,35 @@ const [friend, addFriend] = useState([]);
     const screenWidth = Dimensions.get('window').width;
     const chartWidth = screenWidth * 0.6;
 
-  // State variables hold the completion data
-  const [mealCompletion, setMealCompletion] = useState([0, 0, 0]);
-  const [waterCompletion, setWaterCompletion] = useState([0]);
-  const [sleepCompletion, setSleepCompletion] = useState([0]);
-  const [hygieneCompletion, setHygieneCompletion] = useState([0]);
-  
-  useEffect(() => {
-    const userEmail = auth.currentUser?.email;
-    const documentReference = doc(db, "App Storage", userEmail);
-  
-    getDoc(documentReference).then(documentSnapshot => {
-      if (documentSnapshot.exists()) {
-        const data = documentSnapshot.data();
-  
-        // Compute and set the meal completion percentages
-        setMealCompletion([
-          data.checkedBreakfast ? 100 : 0,
-          data.checkedLunch ? 100 : 0,
-          data.checkedDinner ? 100 : 0,
-        ]);
-  
-        // Compute and set the water completion percentage
-        setWaterCompletion([data.waterProgress * 100]);
-  
-        // Compute and set the sleep completion percentage
-        setSleepCompletion([data.sleepProgress * 100]);
-  
-        // Compute and set the hygiene completion percentage
-        setHygieneCompletion([data.hygieneProgress * 100]);
+    // State variables hold the completion data
+    const [mealCompletion, setMealCompletion] = useState([0, 0, 0]);
+    const [waterCompletion, setWaterCompletion] = useState([0]);
+    const [sleepCompletion, setSleepCompletion] = useState([0]);
+    const [hygieneCompletion, setHygieneCompletion] = useState([0]);
+
+    useEffect(() => {
+      const userEmail = auth.currentUser?.email;
+      const documentReference = doc(db, "App Storage", userEmail);
+
+      getDoc(documentReference).then(documentSnapshot => {
+        if (documentSnapshot.exists()) {
+          const data = documentSnapshot.data();
+
+          // Compute and set the meal completion percentages
+          setMealCompletion([
+            data.checkedBreakfast ? 100 : 0,
+            data.checkedLunch ? 100 : 0,
+            data.checkedDinner ? 100 : 0,
+          ]);
+
+          // Compute and set the water completion percentage
+          setWaterCompletion([data.waterProgress * 100]);
+
+          // Compute and set the sleep completion percentage
+          setSleepCompletion([data.sleepProgress * 100]);
+
+          // Compute and set the hygiene completion percentage
+          setHygieneCompletion([data.hygieneProgress * 100]);
 
           console.log(data)
 
@@ -557,10 +559,6 @@ const [friend, addFriend] = useState([]);
     const navigation = useNavigation();
     return (
       <View style={styles.container}>
-        <Text> Enter Friend Username To Add: </Text>
-        <TextInput style={styles.input}
-          onSubmitEditing={(value) => addFriend(value.nativeEvent.text)} />
-        <Button title="Submit" onPress={() => addNewFriend()} color='green' />
         <Button title="Log Out"
           onPress={() => { loginProps.logOut(); navigation.navigate('Log In') }}>
         </Button>
@@ -568,54 +566,21 @@ const [friend, addFriend] = useState([]);
     );
   }
 
-  //Updated Friends List
-  //function addNewFriend(){
-  //try {
-  //const friendPath = doc(db, "friends", email);
-  //setDoc(friendPath, {
-  //currentFriends:{
-  //friends: arrayUnion(friend)
-  //}
-  //}, {merge: true});
-  //console.log("Updated Friends List")
-  //} catch (error) {
-  //console.error("Error uploading string:", error);
-  //}
-  //}
-
-//Update Social Use States
-function updateMessage(){
-  const friendPath = doc(db, "friends", auth.currentUser?.email);
-  setDoc(friendPath, {
-      message: statusMessage
-      //Add Any Other Social Screen Option here
-    })
-  }
-
-
   function UserScreen() {
     return (
       <MyTabs />
     );
   }
 
-
   function SignInScreen() {
-    const defaultEmail = "chaujannette@gmail.com";
-    const defaultPassword = 'hellooo'
-
-  //Default
-  // setEmail("chaujannette@gmail.com")
-  // setPassword('hellooo')
-  
-  return(
-    <View style={styles.fullScreenContainer}>
-      <SignInOutPScreen 
-        loginProps={loginProps} 
-        auth={auth}/>
-    </View>
-  )
-}
+    return (
+      <View style={styles.fullScreenContainer}>
+        <SignInOutPScreen
+          loginProps={loginProps}
+          auth={auth} />
+      </View>
+    )
+  }
 
   const Tab = createBottomTabNavigator();
 
