@@ -51,6 +51,8 @@ export default function SocialScreen() {
 
     function turnISOtoNormal(time) {
         let date = new Date(time);
+        console.log("here's the date in turnISOtoNormal: ", date);
+        console.log("the toLocaleString function: ", date.toLocaleString());
         return date.toLocaleString();
     }
 
@@ -58,7 +60,7 @@ export default function SocialScreen() {
         console.log("docToMoodMessage inputDoc: ", inputDoc);
         const data = inputDoc.data();
         console.log("here's the data in docToMoodMessage: ", data);
-        return { ...data, date: turnISOtoNormal(data.timestamp) }
+        return { ...data, date: turnISOtoNormal(JSON.parse(data.timestamp)) }
 
     }
     function userMoodToMoodMessage() {
@@ -141,18 +143,18 @@ export default function SocialScreen() {
 
 
         retrieveMessagesFromFirebase(friendsList)
-        const MoodMessageItem = ({ messageItem }) => {
-            console.log("message before it broke: ", messageItem);
+        const MoodMessageItem = ({ message }) => {
+            console.log("message before it broke: ", message);
             return (
                 <View>
                     <Card>
-                        <Card.Title title={messageItem.email + "'s MoodMessage"} titleStyle={{ color: "green" }} />
+                        <Card.Title title={message.currentMood} titleStyle={{ color: "green" }} />
                         <Card.Content>
                             <Text variant="bodyMedium">
-                                {messageItem.currentMood}
+                                Posted by your friend: {message.email}
                             </Text>
                             <Text variant="bodyMedium">
-                                Posted at: {messageItem.date}
+                                Posted at: {message.date}
                             </Text>
                         </Card.Content>
                     </Card>
@@ -165,12 +167,12 @@ export default function SocialScreen() {
             setHasComposedMessage(true);
             setMoodMessageInputText(''); // clear text input for next time
             const now = new Date();
-            const timestampString = JSON.stringify(now.getTime()); // millsecond timestamp
+            const timestampInt = now.getTime(); // millsecond timestamp
 
             setDoc(doc(db, 'MoodMessages', email), {
                 currentMood: moodMessageInputText,
                 email: email,
-                timestamp: timestampString
+                timestamp: timestampInt
             });
 
         };
@@ -193,9 +195,9 @@ export default function SocialScreen() {
                 {(hasComposedMessage) ?
                     <View style={styles.personalMoodMessage}>
                         <Card>
-                            <Card.Title title={"Your Current MoodMessage"} titleStyle={{ color: "pink" }} />
+                            <Card.Title title={currentMood} titleStyle={{ color: "pink" }} />
                             <Card.Content>
-                                <Text variant="headlineMedium">{currentMood}</Text>
+                                <Text variant="headlineMedium">Posted by you: {email}</Text>
                                 <Text variant="bodySmall">Posted at: will be real once i figure out firebase!</Text>
                             </Card.Content>
                         </Card>
