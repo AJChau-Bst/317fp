@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext, Component } from 'react';
 import { Button, Text, View, TextInput, StyleSheet, Image, TouchableOpacity, SafeAreaView } from 'react-native';
 import StateContext from './StateContext.js';
-import { getDoc, set, arrayUnion, addDoc, setDoc, getDocs, doc, query, onValue, collection, where } from "firebase/firestore";
+import { getDoc, set, arrayUnion, addDoc, updateDoc, setDoc, getDocs, doc, query, onValue, collection, where } from "firebase/firestore";
 import styles from "./styles.js";
 
 
@@ -33,9 +33,24 @@ export default function FriendsScreen() {
       });
 
     setConfirmationString(prevString => ("your friend request was sent"));
-    setFriendInputText("");
+    //setFriendInputText("");
     setRequestList(prevList => [...prevList, friendEmail]);
   }
+ 
+  async function addFriend(friendEmail) {
+
+    const newFriendArray = [...friendsList, friendEmail];
+    console.log("here's the friends list: ", newFriendArray);
+    const userFriendRef = doc(db, "FriendsLists", email);
+    await updateDoc(userFriendRef, {
+      friendArray: newFriendArray
+    });
+    setConfirmationString(prevString => ("They were added to your friends list"));
+    setFriendInputText("");
+    setFriendsList(prevList => [...prevList, friendEmail]);
+  }
+
+
 
   //once again causing a million unhandled promises
   // real time updates? might not have time for it
@@ -94,11 +109,11 @@ export default function FriendsScreen() {
   return (
     <View>
       <Text>Friends Screen! </Text>
-      <Text>Request Friends</Text>
+      <Text>Add Friends</Text>
       <TextInput
         style={styles.friendInput}
         onChangeText={setFriendInputText}
-        onSubmitEditing={() => requestFriend(friendInputText)}
+        onSubmitEditing={() => addFriend(friendInputText)}
         value={friendInputText}
         placeholder="sample@email.com"
         keyboardType="email-address"
@@ -107,11 +122,7 @@ export default function FriendsScreen() {
         autoCorrect={false}
       />
 
-      <Text> Pending Requests </Text>
-      <Text>{JSON.stringify(requestList)}</Text>
       <Text>{confirmationString}</Text>
-      <Text> Incoming Requests </Text>
-      <Text>{JSON.stringify(approvalList)}</Text>
 
 
       <Text>{email}'s friends</Text>
