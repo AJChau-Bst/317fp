@@ -114,7 +114,6 @@ export default function FriendsScreen() {
   fetchFriends();
   return (
     <View>
-      <Text>Friends Screen! </Text>
       <Text>Add Friends</Text>
       <TextInput
         style={styles.friendInput}

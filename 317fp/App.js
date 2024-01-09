@@ -590,8 +590,8 @@ export default function App() {
         <Tab.Screen name="Your Pet" component={HomeScreen} />
         <Tab.Screen name="Social" component={SocialScreen} />
         <Tab.Screen name="Friends" component={FriendsScreen} />
+        <Tab.Screen name="Fitness" component={MapScreen} />
         <Tab.Screen name="Status" component={StatusScreen} />
-        <Tab.Screen name="Map" component={MapScreen} />
       </Tab.Navigator>
     );
   }
