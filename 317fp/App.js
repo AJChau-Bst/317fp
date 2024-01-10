@@ -35,7 +35,7 @@ export default function App() {
   const [loggedInUser, setLoggedInUser] = useState(null);
   //const [email, setEmail] = useState(""); //input email
   //const [password, setPassword] = useState(""); //input password
-  const [email, setEmail] = useState("ma108@wellesley.edu"); //testing email
+  const [email, setEmail] = useState("testerforCS317@gmail.com"); //testing email
   const [password, setPassword] = useState("password"); //testing password
   const [friend, addFriend] = useState([]);
 

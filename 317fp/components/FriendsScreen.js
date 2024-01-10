@@ -52,6 +52,9 @@ export default function FriendsScreen() {
 
   async function addFriend(friendEmail) {
 
+    const docRef = doc(db, "FriendsLists", email);
+
+    
     const newFriendArray = [...friendsList, friendEmail];
     console.log("here's the friends list: ", newFriendArray);
     const userFriendRef = doc(db, "FriendsLists", email);
@@ -61,6 +64,7 @@ export default function FriendsScreen() {
     setConfirmationString(prevString => ("They were added to your friends list"));
     setFriendInputText("");
     setFriendsList(prevList => [...prevList, friendEmail]);
+
   }
 
 
@@ -105,7 +109,11 @@ export default function FriendsScreen() {
           }
           //console.log(friendsList);
         } else {
+
+          setDoc(docRef, { friendArray: [] });
+
           // docSnap.data() will be undefined in this case
+
           console.log("No such document!");
         }
       });
