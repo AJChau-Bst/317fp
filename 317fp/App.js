@@ -33,10 +33,10 @@ export default function App() {
 
   //Create Authentication Use States
   const [loggedInUser, setLoggedInUser] = useState(null);
-  //const [email, setEmail] = useState(""); //input email
-  //const [password, setPassword] = useState(""); //input password
-  const [email, setEmail] = useState("testerforCS317@gmail.com"); //testing email
-  const [password, setPassword] = useState("password"); //testing password
+  const [email, setEmail] = useState(""); //input email
+  const [password, setPassword] = useState(""); //input password
+  //const [email, setEmail] = useState(""); //testing email
+  //const [password, setPassword] = useState(""); //testing password
   const [friend, addFriend] = useState([]);
 
   //Create Health Use States
