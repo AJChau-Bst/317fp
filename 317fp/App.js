@@ -186,7 +186,7 @@ export default function App() {
 
     const handleAddHygiene = () => {
       setHygieneProgress(previousHygieneProgress => {
-        const newHygieneProgress = Math.min(previousHygieneProgress + 1 / 7, 1); // Increment by 1/7 because 7 steps of hygiene, max is 1
+        const newHygieneProgress = Math.min(previousHygieneProgress + 1 / 5, 1); // Increment by 1/7 because 7 steps of hygiene, max is 1
         saveProgressToFirebase(); // Save progress after updating
         return newHygieneProgress;
       });
